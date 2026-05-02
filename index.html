@@ -264,7 +264,6 @@
     </div>
 
     <script>
-        // ДАННЫЕ
         const cars = [
             { id: 1, name: "Toyota Land Cruiser", desc: "Внедорожник, 5 мест", price: "15 000₽/день", priceValue: 15000, image: "images/toyota.jpg" },
             { id: 2, name: "Mitsubishi Delica", desc: "Микроавтобус, 7 мест", price: "12 000₽/день", priceValue: 12000, image: "images/delica.jpg" },
@@ -290,12 +289,7 @@
             { id: 8, name: "Мотель \"Тракт\"", desc: "Прямо на трассе", price: "2 800₽/ночь", priceValue: 2800, image: "images/tract-motel.jpg", locationId: 4 }
         ];
 
-        let selections = {
-            car: null,
-            locations: [],
-            accommodations: []
-        };
-
+        let selections = { car: null, locations: [], accommodations: [] };
         let currentStep = 1;
         const totalSteps = 4;
 
@@ -330,7 +324,7 @@
                 const div = document.createElement('div');
                 div.className = `product-card ${isSelected ? 'selected' : ''}`;
                 div.innerHTML = `
-                    <img class="product-image" src="${car.image}" alt="${car.name}" onerror="this.src='https://via.placeholder.com/200x200?text=Нет+фото'">
+                    <img class="product-image" src="${car.image}" onerror="this.src='https://via.placeholder.com/200x200?text=Нет+фото'">
                     <div class="product-info">
                         <div class="product-title">${car.name}</div>
                         <div class="product-desc">${car.desc}</div>
@@ -351,7 +345,7 @@
                 const div = document.createElement('div');
                 div.className = `product-card ${isSelected ? 'selected' : ''}`;
                 div.innerHTML = `
-                    <img class="product-image" src="${loc.image}" alt="${loc.name}" onerror="this.src='https://via.placeholder.com/200x200?text=Нет+фото'">
+                    <img class="product-image" src="${loc.image}" onerror="this.src='https://via.placeholder.com/200x200?text=Нет+фото'">
                     <div class="product-info">
                         <div class="product-title">${loc.name}</div>
                         <div class="product-desc">${loc.desc}</div>
@@ -397,7 +391,7 @@
                 const div = document.createElement('div');
                 div.className = `product-card ${isSelected ? 'selected' : ''}`;
                 div.innerHTML = `
-                    <img class="product-image" src="${acc.image}" alt="${acc.name}" onerror="this.src='https://via.placeholder.com/200x200?text=Нет+фото'">
+                    <img class="product-image" src="${acc.image}" onerror="this.src='https://via.placeholder.com/200x200?text=Нет+фото'">
                     <div class="product-info">
                         <div class="product-title">${acc.name}</div>
                         <div class="product-desc">${acc.desc}</div>
@@ -456,54 +450,38 @@
             container.innerHTML = html;
         }
         
-        // ОТПРАВКА ЗАЯВКИ С ПОПАПОМ И ЗАКРЫТИЕМ
+        // УПРОЩЁННАЯ ОТПРАВКА С alert И ЗАКРЫТИЕМ
         function submitTour() {
             const tg = window.Telegram?.WebApp;
             
-            // Проверки заполнения
+            // Проверки
             if (!selections.car) {
-                if (tg) {
-                    tg.showAlert("Сначала выберите машину!");
-                } else {
-                    alert("Сначала выберите машину!");
-                }
+                alert("❌ Сначала выберите машину!");
                 return;
             }
             
             if (selections.locations.length === 0) {
-                if (tg) {
-                    tg.showAlert("Выберите хотя бы одну локацию!");
-                } else {
-                    alert("Выберите хотя бы одну локацию!");
-                }
+                alert("❌ Выберите хотя бы одну локацию!");
                 return;
             }
             
-            // Собираем данные тура (для отладки)
+            const totalPrice = calculateTotalPrice();
+            
+            // Сохраняем в консоль
             const tourData = {
                 car: cars.find(c => c.id === selections.car),
                 locations: locations.filter(l => selections.locations.includes(l.id)),
                 accommodations: accommodations.filter(a => selections.accommodations.includes(a.id)),
-                totalPrice: calculateTotalPrice()
+                totalPrice: totalPrice
             };
-            
             console.log("Тур собран:", tourData);
             
-            // Показываем попап с сообщением
+            // Показываем сообщение
+            alert(`✅ Заявка отправлена!\n\nВаш тур на сумму ${totalPrice.toLocaleString()} ₽ отправлен менеджеру.\n\nОжидайте связи в ближайшее время!`);
+            
+            // Закрываем приложение
             if (tg) {
-                tg.showPopup({
-                    title: "✅ Заявка отправлена!",
-                    message: "Ваш тур отправлен менеджеру. Ожидайте связи в ближайшее время!",
-                    buttons: [{ type: "ok" }]
-                });
-                
-                // Закрываем приложение через 1 секунду (чтобы пользователь успел прочитать)
-                setTimeout(() => {
-                    tg.close();
-                }, 1000);
-            } else {
-                // Если открыто не в Telegram
-                alert("Тур собран!\n\nСтоимость: " + tourData.totalPrice.toLocaleString() + " ₽\n\nВ режиме теста приложение не закрывается.");
+                tg.close();
             }
         }
 
@@ -533,21 +511,11 @@
         
         function canGoNext() {
             if (currentStep === 1 && !selections.car) {
-                const tg = window.Telegram?.WebApp;
-                if (tg) {
-                    tg.showAlert("Выберите машину!");
-                } else {
-                    alert("Выберите машину!");
-                }
+                alert("Выберите машину!");
                 return false;
             }
             if (currentStep === 2 && selections.locations.length === 0) {
-                const tg = window.Telegram?.WebApp;
-                if (tg) {
-                    tg.showAlert("Выберите хотя бы одну локацию!");
-                } else {
-                    alert("Выберите хотя бы одну локацию!");
-                }
+                alert("Выберите хотя бы одну локацию!");
                 return false;
             }
             return true;
@@ -575,7 +543,6 @@
             if (tg) {
                 tg.ready();
                 tg.expand();
-                tg.enableClosingConfirmation();
             }
         }
         
