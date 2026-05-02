@@ -34,6 +34,13 @@
             text-align: center;
         }
 
+        .step-subtitle {
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+
         /* Сетка 2 колонки */
         .grid {
             display: grid;
@@ -64,7 +71,12 @@
             color: rgba(255,255,255,0.85);
         }
 
-        /* Большая картинка */
+        .product-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.3);
+        }
+
         .product-image {
             width: 100%;
             aspect-ratio: 1 / 1;
@@ -72,7 +84,6 @@
             display: block;
         }
 
-        /* Информация под картинкой */
         .product-info {
             padding: 10px 8px 12px;
         }
@@ -93,6 +104,15 @@
         .product-price {
             font-size: 13px;
             font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .location-badge {
+            display: inline-block;
+            background: rgba(0,0,0,0.1);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 10px;
             margin-top: 4px;
         }
 
@@ -159,7 +179,6 @@
             margin-bottom: 15px;
         }
 
-        /* Для итоговой страницы */
         .summary-item {
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             border-radius: 12px;
@@ -186,6 +205,14 @@
             text-align: center;
             padding: 20px;
         }
+
+        .info-message {
+            text-align: center;
+            padding: 30px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 16px;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -204,11 +231,13 @@
 
     <div id="step2" class="step">
         <div class="step-title">📍 Выберите локации</div>
+        <div class="step-subtitle">Можно выбрать несколько мест</div>
         <div id="locations-list" class="grid"></div>
     </div>
 
     <div id="step3" class="step">
         <div class="step-title">🏨 Выберите места для ночёвок</div>
+        <div id="accommodations-subtitle" class="step-subtitle"></div>
         <div id="accommodations-list" class="grid"></div>
     </div>
 
@@ -255,7 +284,7 @@
             }
         ];
 
-        // ЛОКАЦИИ (добавим фото для каждой)
+        // ЛОКАЦИИ
         const locations = [
             { id: 1, name: "Гора Белуха", desc: "Высочайшая точка Алтая", duration: "1 день", image: "images/belukha.jpg" },
             { id: 2, name: "Телецкое озеро", desc: "Жемчужина Алтая", duration: "2 дня", image: "images/teleckoe.jpg" },
@@ -263,72 +292,203 @@
             { id: 4, name: "Чуйский тракт", desc: "Одна из красивейших дорог", duration: "2 дня", image: "images/chuiskiy.jpg" }
         ];
 
-        // НОЧЁВКИ
+        // НОЧЁВКИ с привязкой к локациям (locationId)
         const accommodations = [
-            { id: 1, name: "Глэмпинг \"Звездная ночь\"", desc: "Палатки с удобствами", price: "5 000₽/ночь", image: "images/glamping.jpg" },
-            { id: 2, name: "База отдыха \"Тишина\"", desc: "Домики у озера", price: "3 500₽/ночь", image: "images/tishina.jpg" },
-            { id: 3, name: "Гостиница \"Центральная\"", desc: "В центре города", price: "4 000₽/ночь", image: "images/central.jpg" },
-            { id: 4, name: "Кемпинг \"У костра\"", desc: "Палатки, общая кухня", price: "1 500₽/ночь", image: "images/koster.jpg" }
+            { 
+                id: 1, 
+                name: "Глэмпинг \"Звездная ночь\"", 
+                desc: "Палатки с удобствами", 
+                price: "5 000₽/ночь", 
+                image: "images/glamping.jpg",
+                locationId: 1  // привязан к Горе Белуха
+            },
+            { 
+                id: 2, 
+                name: "База отдыха \"Белуха\"", 
+                desc: "Гостевой дом у подножия", 
+                price: "4 500₽/ночь", 
+                image: "images/belukha-base.jpg",
+                locationId: 1  // привязан к Горе Белуха
+            },
+            { 
+                id: 3, 
+                name: "База отдыха \"Тишина\"", 
+                desc: "Домики у озера", 
+                price: "3 500₽/ночь", 
+                image: "images/tishina.jpg",
+                locationId: 2  // привязан к Телецкому озеру
+            },
+            { 
+                id: 4, 
+                name: "Кемпинг \"Озерный\"", 
+                desc: "Прямо на берегу", 
+                price: "2 500₽/ночь", 
+                image: "images/lake-camp.jpg",
+                locationId: 2  // привязан к Телецкому озеру
+            },
+            { 
+                id: 5, 
+                name: "Гостиница \"Марс\"", 
+                desc: "Рядом с марсианскими горами", 
+                price: "4 000₽/ночь", 
+                image: "images/mars-hotel.jpg",
+                locationId: 3  // привязан к Марсианским горам
+            },
+            { 
+                id: 6, 
+                name: "Кемпинг \"У костра\"", 
+                desc: "Палатки, общая кухня", 
+                price: "1 500₽/ночь", 
+                image: "images/koster.jpg",
+                locationId: 3  // привязан к Марсианским горам
+            },
+            { 
+                id: 7, 
+                name: "Гостиница \"Центральная\"", 
+                desc: "В центре города", 
+                price: "4 000₽/ночь", 
+                image: "images/central.jpg",
+                locationId: 4  // привязан к Чуйскому тракту
+            },
+            { 
+                id: 8, 
+                name: "Мотель \"Тракт\"", 
+                desc: "Прямо на трассе", 
+                price: "2 800₽/ночь", 
+                image: "images/tract-motel.jpg",
+                locationId: 4  // привязан к Чуйскому тракту
+            }
         ];
 
         let selections = {
             car: null,
-            locations: [],
-            accommodations: []
+            locations: [],      // ID выбранных локаций
+            accommodations: []  // ID выбранных ночёвок
         };
 
         let currentStep = 1;
         const totalSteps = 4;
 
-        // Универсальная функция рендера карточек
-        function renderGrid(containerId, items, isMultiSelect, isLocation = false) {
-            const container = document.getElementById(containerId);
+        // Получить доступные ночёвки на основе выбранных локаций
+        function getAvailableAccommodations() {
+            if (selections.locations.length === 0) {
+                return [];  // Если локации не выбраны — ничего не показываем
+            }
+            return accommodations.filter(acc => selections.locations.includes(acc.locationId));
+        }
+
+        // Функция рендера машин
+        function renderCars() {
+            const container = document.getElementById('cars-list');
             if (!container) return;
             
             container.innerHTML = '';
-            items.forEach(item => {
-                let isSelected;
-                if (isLocation) {
-                    isSelected = selections.locations.includes(item.id);
-                } else if (containerId === 'cars-list') {
-                    isSelected = selections.car === item.id;
+            cars.forEach(car => {
+                const isSelected = selections.car === car.id;
+                const div = document.createElement('div');
+                div.className = `product-card ${isSelected ? 'selected' : ''}`;
+                div.innerHTML = `
+                    <img class="product-image" src="${car.image}" alt="${car.name}" onerror="this.src='https://via.placeholder.com/200x200?text=Нет+фото'">
+                    <div class="product-info">
+                        <div class="product-title">${car.name}</div>
+                        <div class="product-desc">${car.desc}</div>
+                        <div class="product-price">${car.price}</div>
+                    </div>
+                `;
+                div.onclick = () => {
+                    selections.car = car.id;
+                    renderCars();
+                };
+                container.appendChild(div);
+            });
+        }
+
+        // Функция рендера локаций
+        function renderLocations() {
+            const container = document.getElementById('locations-list');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            locations.forEach(loc => {
+                const isSelected = selections.locations.includes(loc.id);
+                const div = document.createElement('div');
+                div.className = `product-card ${isSelected ? 'selected' : ''}`;
+                div.innerHTML = `
+                    <img class="product-image" src="${loc.image}" alt="${loc.name}" onerror="this.src='https://via.placeholder.com/200x200?text=Нет+фото'">
+                    <div class="product-info">
+                        <div class="product-title">${loc.name}</div>
+                        <div class="product-desc">${loc.desc}</div>
+                        <div class="product-price">${loc.duration}</div>
+                    </div>
+                `;
+                div.onclick = () => {
+                    if (isSelected) {
+                        selections.locations = selections.locations.filter(id => id !== loc.id);
+                    } else {
+                        selections.locations.push(loc.id);
+                    }
+                    renderLocations();
+                    // Если уже были на шаге ночёвок — обновляем их при изменении локаций
+                    if (currentStep === 3) {
+                        renderAccommodations();
+                    }
+                };
+                container.appendChild(div);
+            });
+        }
+
+        // Функция рендера ночёвок (только доступные по выбранным локациям)
+        function renderAccommodations() {
+            const container = document.getElementById('accommodations-list');
+            const subtitle = document.getElementById('accommodations-subtitle');
+            if (!container) return;
+            
+            const availableAccommodations = getAvailableAccommodations();
+            const selectedLocationNames = locations
+                .filter(l => selections.locations.includes(l.id))
+                .map(l => l.name)
+                .join(', ');
+            
+            // Обновляем подзаголовок
+            if (subtitle) {
+                if (selections.locations.length === 0) {
+                    subtitle.innerHTML = '⚠️ Сначала выберите локации на предыдущем шаге';
+                    subtitle.style.color = '#ff3b30';
                 } else {
-                    isSelected = selections.accommodations.includes(item.id);
+                    subtitle.innerHTML = `Для выбранных локаций: ${selectedLocationNames}`;
+                    subtitle.style.color = 'inherit';
                 }
+            }
+            
+            container.innerHTML = '';
+            
+            if (availableAccommodations.length === 0) {
+                container.innerHTML = '<div class="info-message">🏔️ Для выбранных локаций пока нет предложений по ночёвкам. Вернитесь и выберите другие локации.</div>';
+                return;
+            }
+            
+            availableAccommodations.forEach(acc => {
+                const isSelected = selections.accommodations.includes(acc.id);
+                const relatedLocation = locations.find(l => l.id === acc.locationId);
                 
                 const div = document.createElement('div');
                 div.className = `product-card ${isSelected ? 'selected' : ''}`;
                 div.innerHTML = `
-                    <img class="product-image" src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/200x200?text=Нет+фото'">
+                    <img class="product-image" src="${acc.image}" alt="${acc.name}" onerror="this.src='https://via.placeholder.com/200x200?text=Нет+фото'">
                     <div class="product-info">
-                        <div class="product-title">${item.name}</div>
-                        <div class="product-desc">${item.desc}</div>
-                        <div class="product-price">${item.price || item.duration || ''}</div>
+                        <div class="product-title">${acc.name}</div>
+                        <div class="product-desc">${acc.desc}</div>
+                        <div class="product-price">${acc.price}</div>
+                        <div class="location-badge">📍 ${relatedLocation?.name || ''}</div>
                     </div>
                 `;
-                
                 div.onclick = () => {
-                    if (containerId === 'cars-list') {
-                        // Выбор машины (один вариант)
-                        selections.car = item.id;
-                        renderGrid('cars-list', cars, false);
-                    } else if (containerId === 'locations-list') {
-                        // Выбор локаций (несколько)
-                        if (isSelected) {
-                            selections.locations = selections.locations.filter(id => id !== item.id);
-                        } else {
-                            selections.locations.push(item.id);
-                        }
-                        renderGrid('locations-list', locations, true, true);
-                    } else if (containerId === 'accommodations-list') {
-                        // Выбор ночёвок (несколько)
-                        if (isSelected) {
-                            selections.accommodations = selections.accommodations.filter(id => id !== item.id);
-                        } else {
-                            selections.accommodations.push(item.id);
-                        }
-                        renderGrid('accommodations-list', accommodations, true);
+                    if (isSelected) {
+                        selections.accommodations = selections.accommodations.filter(id => id !== acc.id);
+                    } else {
+                        selections.accommodations.push(acc.id);
                     }
+                    renderAccommodations();
                 };
                 container.appendChild(div);
             });
@@ -377,12 +537,14 @@
             
             if (selectedAccommodations.length > 0) {
                 selectedAccommodations.forEach(acc => {
+                    const relatedLocation = locations.find(l => l.id === acc.locationId);
                     html += `
                         <div class="summary-item">
                             <img class="summary-image" src="${acc.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'">
                             <div class="summary-info">
                                 <strong>🏨 ${acc.name}</strong><br>
-                                ${acc.price}
+                                ${acc.price}<br>
+                                <small>📍 ${relatedLocation?.name || ''}</small>
                             </div>
                         </div>
                     `;
@@ -468,6 +630,10 @@
                 nextBtn.textContent = 'Далее ▶';
             }
             
+            if (currentStep === 3) {
+                renderAccommodations();  // Перерисовываем ночёвки при переходе на шаг 3
+            }
+            
             if (currentStep === 4) {
                 renderSummary();
             }
@@ -479,6 +645,14 @@
                     window.Telegram.WebApp.showAlert("Выберите машину!");
                 } else {
                     alert("Выберите машину!");
+                }
+                return false;
+            }
+            if (currentStep === 2 && selections.locations.length === 0) {
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert("Выберите хотя бы одну локацию!");
+                } else {
+                    alert("Выберите хотя бы одну локацию!");
                 }
                 return false;
             }
@@ -513,12 +687,8 @@
         
         function init() {
             initTelegram();
-            
-            // Рендерим все сетки
-            renderGrid('cars-list', cars, false);
-            renderGrid('locations-list', locations, true, true);
-            renderGrid('accommodations-list', accommodations, true);
-            
+            renderCars();
+            renderLocations();
             updateStep();
             
             document.getElementById('prevBtn').onclick = prevStep;
