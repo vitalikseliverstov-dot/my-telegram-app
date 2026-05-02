@@ -450,7 +450,7 @@
             container.innerHTML = html;
         }
         
-        // УПРОЩЁННАЯ ОТПРАВКА С alert И ЗАКРЫТИЕМ
+        // ОТПРАВКА С ЗАКРЫТИЕМ (только для Telegram)
         function submitTour() {
             const tg = window.Telegram?.WebApp;
             
@@ -479,7 +479,7 @@
             // Показываем сообщение
             alert(`✅ Заявка отправлена!\n\nВаш тур на сумму ${totalPrice.toLocaleString()} ₽ отправлен менеджеру.\n\nОжидайте связи в ближайшее время!`);
             
-            // Закрываем приложение
+            // Закрываем приложение (только если открыто в Telegram)
             if (tg) {
                 tg.close();
             }
