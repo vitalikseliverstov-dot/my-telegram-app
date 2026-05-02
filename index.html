@@ -264,7 +264,7 @@
     </div>
 
     <script>
-        // Данные (машины, локации, ночёвки)
+        // ДАННЫЕ
         const cars = [
             { id: 1, name: "Toyota Land Cruiser", desc: "Внедорожник, 5 мест", price: "15 000₽/день", priceValue: 15000, image: "images/toyota.jpg" },
             { id: 2, name: "Mitsubishi Delica", desc: "Микроавтобус, 7 мест", price: "12 000₽/день", priceValue: 12000, image: "images/delica.jpg" },
@@ -425,12 +425,15 @@
             const selectedAccs = accommodations.filter(a => selections.accommodations.includes(a.id));
             const totalPrice = calculateTotalPrice();
             const totalDays = selectedLocs.reduce((sum, loc) => sum + loc.durationDays, 0);
+            
             let html = '';
+            
             if (selectedCar) {
-                html += `<div class="summary-item"><img class="summary-image" src="${selectedCar.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'"><div class="summary-info"><strong>🚗 ${selectedCar.name}</strong><br>${selectedCar.price} × ${totalDays} дн. = ${selectedCar.priceValue * totalDays}₽</div></div>`;
+                html += `<div class="summary-item"><img class="summary-image" src="${selectedCar.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'"><div class="summary-info"><strong>🚗 ${selectedCar.name}</strong><br>${selectedCar.price} × ${totalDays} дн. = ${(selectedCar.priceValue * totalDays).toLocaleString()}₽</div></div>`;
             } else {
                 html += `<div class="warning">⚠️ Машина не выбрана</div>`;
             }
+            
             if (selectedLocs.length > 0) {
                 selectedLocs.forEach(loc => {
                     html += `<div class="summary-item"><img class="summary-image" src="${loc.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'"><div class="summary-info"><strong>📍 ${loc.name}</strong><br>${loc.duration}</div></div>`;
@@ -438,6 +441,7 @@
             } else {
                 html += `<div class="warning">⚠️ Локации не выбраны</div>`;
             }
+            
             if (selectedAccs.length > 0) {
                 selectedAccs.forEach(acc => {
                     const relatedLocation = locations.find(l => l.id === acc.locationId);
@@ -446,53 +450,61 @@
             } else {
                 html += `<div class="warning">⚠️ Ночёвки не выбраны</div>`;
             }
+            
             html += `<div class="total-price"><div class="total-price-label">💰 Итоговая стоимость тура</div><div class="total-price-value">${totalPrice.toLocaleString()} ₽</div><div class="total-price-note">Включает аренду авто и проживание</div></div>`;
+            
             container.innerHTML = html;
         }
         
-        // ОТПРАВКА ДАННЫХ БОТУ (через tg.sendData)
+        // ОТПРАВКА ЗАЯВКИ С ПОПАПОМ И ЗАКРЫТИЕМ
         function submitTour() {
-            if (!selections.car) {
-                window.Telegram?.WebApp.showAlert("Выберите машину!");
-                return;
-            }
-            if (selections.locations.length === 0) {
-                window.Telegram?.WebApp.showAlert("Выберите хотя бы одну локацию!");
-                return;
-            }
-            
             const tg = window.Telegram?.WebApp;
-            const userData = tg?.initDataUnsafe?.user || {};
             
+            // Проверки заполнения
+            if (!selections.car) {
+                if (tg) {
+                    tg.showAlert("Сначала выберите машину!");
+                } else {
+                    alert("Сначала выберите машину!");
+                }
+                return;
+            }
+            
+            if (selections.locations.length === 0) {
+                if (tg) {
+                    tg.showAlert("Выберите хотя бы одну локацию!");
+                } else {
+                    alert("Выберите хотя бы одну локацию!");
+                }
+                return;
+            }
+            
+            // Собираем данные тура (для отладки)
             const tourData = {
-                type: 'tour_construction',
-                user: {
-                    id: userData.id,
-                    first_name: userData.first_name,
-                    last_name: userData.last_name,
-                    username: userData.username
-                },
                 car: cars.find(c => c.id === selections.car),
                 locations: locations.filter(l => selections.locations.includes(l.id)),
                 accommodations: accommodations.filter(a => selections.accommodations.includes(a.id)),
-                totalPrice: calculateTotalPrice(),
-                timestamp: new Date().toISOString()
+                totalPrice: calculateTotalPrice()
             };
             
-            console.log('Отправляем данные боту:', tourData);
+            console.log("Тур собран:", tourData);
             
-            // Отправляем данные боту через Telegram WebApp
-            tg.sendData(JSON.stringify(tourData));
-            
-            // Показываем уведомление об успешной отправке
-            tg.showPopup({
-                title: '✅ Заявка отправлена!',
-                message: 'Ваш тур отправлен менеджеру. Скоро с вами свяжутся!',
-                buttons: [{ type: 'ok' }]
-            });
-            
-            // Закрываем приложение
-            tg.close();
+            // Показываем попап с сообщением
+            if (tg) {
+                tg.showPopup({
+                    title: "✅ Заявка отправлена!",
+                    message: "Ваш тур отправлен менеджеру. Ожидайте связи в ближайшее время!",
+                    buttons: [{ type: "ok" }]
+                });
+                
+                // Закрываем приложение через 1 секунду (чтобы пользователь успел прочитать)
+                setTimeout(() => {
+                    tg.close();
+                }, 1000);
+            } else {
+                // Если открыто не в Telegram
+                alert("Тур собран!\n\nСтоимость: " + tourData.totalPrice.toLocaleString() + " ₽\n\nВ режиме теста приложение не закрывается.");
+            }
         }
 
         function updateStep() {
@@ -501,27 +513,41 @@
                 if (step) step.classList.remove('active');
             }
             document.getElementById(`step${currentStep}`)?.classList.add('active');
+            
             for (let i = 1; i <= totalSteps; i++) {
                 const dot = document.querySelector(`.step-dot[data-step="${i}"]`);
                 if (dot) {
                     i === currentStep ? dot.classList.add('active') : dot.classList.remove('active');
                 }
             }
+            
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
+            
             prevBtn.style.display = currentStep === 1 ? 'none' : 'block';
             nextBtn.textContent = currentStep === totalSteps ? '✅ Отправить тур' : 'Далее ▶';
+            
             if (currentStep === 3) renderAccommodations();
             if (currentStep === 4) renderSummary();
         }
         
         function canGoNext() {
             if (currentStep === 1 && !selections.car) {
-                window.Telegram?.WebApp.showAlert("Выберите машину!");
+                const tg = window.Telegram?.WebApp;
+                if (tg) {
+                    tg.showAlert("Выберите машину!");
+                } else {
+                    alert("Выберите машину!");
+                }
                 return false;
             }
             if (currentStep === 2 && selections.locations.length === 0) {
-                window.Telegram?.WebApp.showAlert("Выберите хотя бы одну локацию!");
+                const tg = window.Telegram?.WebApp;
+                if (tg) {
+                    tg.showAlert("Выберите хотя бы одну локацию!");
+                } else {
+                    alert("Выберите хотя бы одну локацию!");
+                }
                 return false;
             }
             return true;
@@ -558,6 +584,7 @@
             renderCars();
             renderLocations();
             updateStep();
+            
             document.getElementById('prevBtn').onclick = prevStep;
             document.getElementById('nextBtn').onclick = nextStep;
         }
