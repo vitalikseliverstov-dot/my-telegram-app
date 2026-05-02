@@ -34,7 +34,7 @@
             text-align: center;
         }
 
-        /* Карточки выбора */
+        /* Карточки выбора с фото */
         .option-card {
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             border-radius: 16px;
@@ -43,12 +43,27 @@
             cursor: pointer;
             transition: all 0.2s;
             border: 2px solid transparent;
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
         .option-card.selected {
             border-color: var(--tg-theme-button-color, #3390ec);
             background: var(--tg-theme-button-color, #3390ec);
             color: white;
+        }
+
+        .car-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #ddd;
+        }
+
+        .car-info {
+            flex: 1;
         }
 
         .option-title {
@@ -120,6 +135,10 @@
             width: 24px;
             background: var(--tg-theme-button-color, #3390ec);
         }
+
+        .section {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -163,12 +182,37 @@
     </div>
 
     <script>
-        // ДАННЫЕ ДЛЯ КОНСТРУКТОРА
+        // ДАННЫЕ ДЛЯ КОНСТРУКТОРА С ФОТОГРАФИЯМИ
         const cars = [
-            { id: 1, name: "Toyota Land Cruiser", desc: "Комфортный внедорожник, 5 мест", price: "15 000₽/день" },
-            { id: 2, name: "Mitsubishi Delica", desc: "Микроавтобус, 7 мест, для компании", price: "12 000₽/день" },
-            { id: 3, name: "Kia Sorento", desc: "Экономичный кроссовер, 5 мест", price: "8 000₽/день" },
-            { id: 4, name: "УАЗ Буханка", desc: "Для бездорожья, настоящий вездеход", price: "7 000₽/день" }
+            { 
+                id: 1, 
+                name: "Toyota Land Cruiser", 
+                desc: "Комфортный внедорожник, 5 мест", 
+                price: "15 000₽/день",
+                // ВАЖНО: замени ссылки на свои, когда загрузишь фото
+                image: "https://avatars.mds.yandex.net/get-autoru-vos/2200864/32e2da65c56f2768ad05cc7a8d4947a8/1200x900"
+            },
+            { 
+                id: 2, 
+                name: "Mitsubishi Delica", 
+                desc: "Микроавтобус, 7 мест, для компании", 
+                price: "12 000₽/день",
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Mitsubishi_Delica_%28front%29.JPG/800px-Mitsubishi_Delica_%28front%29.JPG"
+            },
+            { 
+                id: 3, 
+                name: "Kia Sorento", 
+                desc: "Экономичный кроссовер, 5 мест", 
+                price: "8 000₽/день",
+                image: "https://avatars.mds.yandex.net/get-autoru-vos/2154864/6a1e2b24f5f6e03e2b9d07f1f8b6c8e5/1200x900"
+            },
+            { 
+                id: 4, 
+                name: "УАЗ Буханка", 
+                desc: "Для бездорожья, настоящий вездеход", 
+                price: "7 000₽/день",
+                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/UAZ-452_%28front%29.JPG/800px-UAZ-452_%28front%29.JPG"
+            }
         ];
 
         const locations = [
@@ -185,17 +229,17 @@
             { id: 4, name: "Кемпинг \"У костра\"", desc: "Палатки, общая кухня", price: "1 500₽/ночь" }
         ];
 
-        // Состояние приложения (что выбрал пользователь)
+        // Состояние приложения
         let selections = {
             car: null,
-            locations: [],  // массив ID выбранных локаций
-            accommodations: []  // массив ID выбранных ночёвок
+            locations: [],
+            accommodations: []
         };
 
         let currentStep = 1;
         const totalSteps = 4;
 
-        // Функция отрисовки списка машин
+        // Функция отрисовки списка машин с фотографиями
         function renderCars() {
             const container = document.getElementById('cars-list');
             if (!container) return;
@@ -206,20 +250,22 @@
                 const div = document.createElement('div');
                 div.className = `option-card ${isSelected ? 'selected' : ''}`;
                 div.innerHTML = `
-                    <div class="option-title">${car.name}</div>
-                    <div class="option-desc">${car.desc}</div>
-                    <div class="option-desc">💰 ${car.price}</div>
+                    <img class="car-image" src="${car.image}" alt="${car.name}" onerror="this.src='https://via.placeholder.com/80x80?text=Нет+фото'">
+                    <div class="car-info">
+                        <div class="option-title">${car.name}</div>
+                        <div class="option-desc">${car.desc}</div>
+                        <div class="option-desc">💰 ${car.price}</div>
+                    </div>
                 `;
                 div.onclick = () => {
-                    // Очищаем выбор
                     selections.car = car.id;
-                    renderCars();  // Перерисовываем
+                    renderCars();
                 };
                 container.appendChild(div);
             });
         }
 
-        // Функция отрисовки списка локаций (можно выбирать несколько)
+        // Функция отрисовки списка локаций
         function renderLocations() {
             const container = document.getElementById('locations-list');
             if (!container) return;
@@ -230,25 +276,25 @@
                 const div = document.createElement('div');
                 div.className = `option-card ${isSelected ? 'selected' : ''}`;
                 div.innerHTML = `
-                    <div class="option-title">${loc.name}</div>
-                    <div class="option-desc">${loc.desc}</div>
-                    <div class="option-desc">⏱ ${loc.duration}</div>
+                    <div class="car-info">
+                        <div class="option-title">${loc.name}</div>
+                        <div class="option-desc">${loc.desc}</div>
+                        <div class="option-desc">⏱ ${loc.duration}</div>
+                    </div>
                 `;
                 div.onclick = () => {
                     if (isSelected) {
-                        // Убираем из выбранного
                         selections.locations = selections.locations.filter(id => id !== loc.id);
                     } else {
-                        // Добавляем
                         selections.locations.push(loc.id);
                     }
-                    renderLocations();  // Перерисовываем
+                    renderLocations();
                 };
                 container.appendChild(div);
             });
         }
 
-        // Функция отрисовки списка ночёвок (можно выбирать несколько)
+        // Функция отрисовки списка ночёвок
         function renderAccommodations() {
             const container = document.getElementById('accommodations-list');
             if (!container) return;
@@ -259,9 +305,11 @@
                 const div = document.createElement('div');
                 div.className = `option-card ${isSelected ? 'selected' : ''}`;
                 div.innerHTML = `
-                    <div class="option-title">${acc.name}</div>
-                    <div class="option-desc">${acc.desc}</div>
-                    <div class="option-desc">💰 ${acc.price}</div>
+                    <div class="car-info">
+                        <div class="option-title">${acc.name}</div>
+                        <div class="option-desc">${acc.desc}</div>
+                        <div class="option-desc">💰 ${acc.price}</div>
+                    </div>
                 `;
                 div.onclick = () => {
                     if (isSelected) {
@@ -286,16 +334,19 @@
             
             let html = '';
             
-            // Машина
             html += `<div class="section"><strong>🚗 Машина:</strong><br>`;
             if (selectedCar) {
-                html += `${selectedCar.name} — ${selectedCar.price}`;
+                html += `
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <img src="${selectedCar.image}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">
+                        <div>${selectedCar.name} — ${selectedCar.price}</div>
+                    </div>
+                `;
             } else {
                 html += `<span style="color: red;">Не выбрана!</span>`;
             }
             html += `</div><br>`;
             
-            // Локации
             html += `<div class="section"><strong>📍 Локации (${selectedLocations.length}):</strong><br>`;
             if (selectedLocations.length > 0) {
                 selectedLocations.forEach(l => {
@@ -306,7 +357,6 @@
             }
             html += `</div><br>`;
             
-            // Ночёвки
             html += `<div class="section"><strong>🏨 Ночёвки (${selectedAccommodations.length}):</strong><br>`;
             if (selectedAccommodations.length > 0) {
                 selectedAccommodations.forEach(a => {
@@ -317,12 +367,10 @@
             }
             html += `</div><br>`;
             
-            // Кнопка отправки
             html += `<button id="submitTourBtn" class="btn-primary" style="margin-top: 20px;">📤 Отправить тур в Telegram</button>`;
             
             container.innerHTML = html;
             
-            // Вешаем обработчик на кнопку отправки
             const submitBtn = document.getElementById('submitTourBtn');
             if (submitBtn) {
                 submitBtn.onclick = () => {
@@ -331,7 +379,6 @@
             }
         }
         
-        // Функция отправки данных в Telegram
         function submitTour() {
             if (!selections.car) {
                 if (window.Telegram?.WebApp) {
@@ -354,28 +401,23 @@
                 timestamp: new Date().toISOString()
             };
             
-            // Отправляем в Telegram
             if (window.Telegram?.WebApp) {
                 window.Telegram.WebApp.sendData(JSON.stringify(tourData));
                 window.Telegram.WebApp.showAlert("Тур отправлен! Бот скоро ответит.");
             } else {
                 console.log("Данные тура:", tourData);
-                alert("Данные тура готовы (Telegram не обнаружен):\n" + JSON.stringify(tourData, null, 2));
+                alert("Данные тура готовы:\n" + JSON.stringify(tourData, null, 2));
             }
         }
 
-        // Обновление интерфейса (показываем нужный шаг)
         function updateStep() {
-            // Прячем все шаги
             for (let i = 1; i <= totalSteps; i++) {
                 const step = document.getElementById(`step${i}`);
                 if (step) step.classList.remove('active');
             }
-            // Показываем текущий
             const currentStepEl = document.getElementById(`step${currentStep}`);
             if (currentStepEl) currentStepEl.classList.add('active');
             
-            // Обновляем индикаторы
             for (let i = 1; i <= totalSteps; i++) {
                 const dot = document.querySelector(`.step-dot[data-step="${i}"]`);
                 if (dot) {
@@ -387,7 +429,6 @@
                 }
             }
             
-            // Управление кнопками
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
             
@@ -403,13 +444,11 @@
                 nextBtn.textContent = 'Далее ▶';
             }
             
-            // Если текущий шаг — итог, перерисовываем его
             if (currentStep === 4) {
                 renderSummary();
             }
         }
         
-        // Проверка, можно ли перейти на следующий шаг
         function canGoNext() {
             if (currentStep === 1 && !selections.car) {
                 if (window.Telegram?.WebApp) {
@@ -422,7 +461,6 @@
             return true;
         }
         
-        // Переход на следующий шаг
         function nextStep() {
             if (!canGoNext()) return;
             if (currentStep < totalSteps) {
@@ -433,7 +471,6 @@
             }
         }
         
-        // Переход на предыдущий шаг
         function prevStep() {
             if (currentStep > 1) {
                 currentStep--;
@@ -441,7 +478,6 @@
             }
         }
         
-        // Инициализация Telegram WebApp
         function initTelegram() {
             const tg = window.Telegram?.WebApp;
             if (tg) {
@@ -451,7 +487,6 @@
             }
         }
         
-        // Запуск приложения
         function init() {
             initTelegram();
             renderCars();
@@ -459,12 +494,10 @@
             renderAccommodations();
             updateStep();
             
-            // Навешиваем обработчики на кнопки
             document.getElementById('prevBtn').onclick = prevStep;
             document.getElementById('nextBtn').onclick = nextStep;
         }
         
-        // Запускаем после загрузки страницы
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
