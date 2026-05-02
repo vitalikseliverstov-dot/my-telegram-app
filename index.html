@@ -3,67 +3,469 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Моё приложение</title>
+    <title>Конструктор туров</title>
     <style>
-        body {
+        * {
             margin: 0;
-            padding: 20px;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5;
-            color: #222;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .step-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
             text-align: center;
         }
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 30px 20px;
-            margin-top: 50px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        button {
-            background: #0088cc;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 30px;
-            font-size: 16px;
-            margin-top: 20px;
+
+        /* Карточки выбора */
+        .option-card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
             cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
         }
-        img {
-            width: 150px;
-            border-radius: 20px;
-            margin-top: 20px;
+
+        .option-card.selected {
+            border-color: var(--tg-theme-button-color, #3390ec);
+            background: var(--tg-theme-button-color, #3390ec);
+            color: white;
+        }
+
+        .option-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .option-desc {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Кнопки навигации */
+        .nav-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-top: 1px solid var(--tg-theme-hint-color, #cccccc);
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:active {
+            opacity: 0.7;
+        }
+
+        .btn-primary {
+            background: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
+        }
+
+        .btn-secondary {
+            background: var(--tg-theme-secondary-bg-color, #e0e0e0);
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        /* Индикатор шагов */
+        .steps-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--tg-theme-hint-color, #cccccc);
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            width: 24px;
+            background: var(--tg-theme-button-color, #3390ec);
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Привет из Telegram! 👋</h1>
-        <p>Это моё первое Mini App</p>
-        <img src="https://cdn-icons-png.flaticon.com/512/906/906334.png" alt="star">
-        <br>
-        <button onclick="showMessage()">Нажми меня</button>
+
+    <!-- Индикатор шагов -->
+    <div class="steps-indicator">
+        <div class="step-dot active" data-step="1"></div>
+        <div class="step-dot" data-step="2"></div>
+        <div class="step-dot" data-step="3"></div>
+        <div class="step-dot" data-step="4"></div>
+    </div>
+
+    <!-- ШАГ 1: Выбор машины -->
+    <div id="step1" class="step active">
+        <div class="step-title">🚗 Выберите машину</div>
+        <div id="cars-list"></div>
+    </div>
+
+    <!-- ШАГ 2: Выбор локаций -->
+    <div id="step2" class="step">
+        <div class="step-title">📍 Выберите локации</div>
+        <div id="locations-list"></div>
+    </div>
+
+    <!-- ШАГ 3: Выбор ночёвок -->
+    <div id="step3" class="step">
+        <div class="step-title">🏨 Выберите места для ночёвок</div>
+        <div id="accommodations-list"></div>
+    </div>
+
+    <!-- ШАГ 4: Итог -->
+    <div id="step4" class="step">
+        <div class="step-title">✅ Ваш тур</div>
+        <div id="summary"></div>
+    </div>
+
+    <!-- Кнопки навигации -->
+    <div class="nav-buttons">
+        <button id="prevBtn" class="btn-secondary" style="display: none;">◀ Назад</button>
+        <button id="nextBtn" class="btn-primary">Далее ▶</button>
     </div>
 
     <script>
-        function showMessage() {
-            alert('Кнопка работает! 🎉');
+        // ДАННЫЕ ДЛЯ КОНСТРУКТОРА
+        const cars = [
+            { id: 1, name: "Toyota Land Cruiser", desc: "Комфортный внедорожник, 5 мест", price: "15 000₽/день" },
+            { id: 2, name: "Mitsubishi Delica", desc: "Микроавтобус, 7 мест, для компании", price: "12 000₽/день" },
+            { id: 3, name: "Kia Sorento", desc: "Экономичный кроссовер, 5 мест", price: "8 000₽/день" },
+            { id: 4, name: "УАЗ Буханка", desc: "Для бездорожья, настоящий вездеход", price: "7 000₽/день" }
+        ];
+
+        const locations = [
+            { id: 1, name: "Гора Белуха", desc: "Высочайшая точка Алтая", duration: "1 день" },
+            { id: 2, name: "Телецкое озеро", desc: "Жемчужина Алтая", duration: "2 дня" },
+            { id: 3, name: "Марсианские горы", desc: "Необычные красные скалы", duration: "1 день" },
+            { id: 4, name: "Чуйский тракт", desc: "Одна из самых красивых дорог мира", duration: "2 дня" }
+        ];
+
+        const accommodations = [
+            { id: 1, name: "Глэмпинг \"Звездная ночь\"", desc: "Палатки со всеми удобствами", price: "5 000₽/ночь" },
+            { id: 2, name: "База отдыха \"Тишина\"", desc: "Домики у озера", price: "3 500₽/ночь" },
+            { id: 3, name: "Гостиница \"Центральная\"", desc: "В центре города", price: "4 000₽/ночь" },
+            { id: 4, name: "Кемпинг \"У костра\"", desc: "Палатки, общая кухня", price: "1 500₽/ночь" }
+        ];
+
+        // Состояние приложения (что выбрал пользователь)
+        let selections = {
+            car: null,
+            locations: [],  // массив ID выбранных локаций
+            accommodations: []  // массив ID выбранных ночёвок
+        };
+
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        // Функция отрисовки списка машин
+        function renderCars() {
+            const container = document.getElementById('cars-list');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            cars.forEach(car => {
+                const isSelected = selections.car === car.id;
+                const div = document.createElement('div');
+                div.className = `option-card ${isSelected ? 'selected' : ''}`;
+                div.innerHTML = `
+                    <div class="option-title">${car.name}</div>
+                    <div class="option-desc">${car.desc}</div>
+                    <div class="option-desc">💰 ${car.price}</div>
+                `;
+                div.onclick = () => {
+                    // Очищаем выбор
+                    selections.car = car.id;
+                    renderCars();  // Перерисовываем
+                };
+                container.appendChild(div);
+            });
         }
 
-        // Проверяем, открыто ли приложение внутри Telegram
-        if (window.Telegram && window.Telegram.WebApp) {
-            let tg = window.Telegram.WebApp;
-            tg.ready(); // Сообщаем Telegram, что приложение загружено
-            tg.expand(); // Растягиваем на весь экран
+        // Функция отрисовки списка локаций (можно выбирать несколько)
+        function renderLocations() {
+            const container = document.getElementById('locations-list');
+            if (!container) return;
             
-            // Показываем данные пользователя (если есть)
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                console.log('Пользователь:', tg.initDataUnsafe.user);
-            }
-        } else {
-            console.log('Приложение открыто в браузере, не в Telegram');
+            container.innerHTML = '';
+            locations.forEach(loc => {
+                const isSelected = selections.locations.includes(loc.id);
+                const div = document.createElement('div');
+                div.className = `option-card ${isSelected ? 'selected' : ''}`;
+                div.innerHTML = `
+                    <div class="option-title">${loc.name}</div>
+                    <div class="option-desc">${loc.desc}</div>
+                    <div class="option-desc">⏱ ${loc.duration}</div>
+                `;
+                div.onclick = () => {
+                    if (isSelected) {
+                        // Убираем из выбранного
+                        selections.locations = selections.locations.filter(id => id !== loc.id);
+                    } else {
+                        // Добавляем
+                        selections.locations.push(loc.id);
+                    }
+                    renderLocations();  // Перерисовываем
+                };
+                container.appendChild(div);
+            });
         }
+
+        // Функция отрисовки списка ночёвок (можно выбирать несколько)
+        function renderAccommodations() {
+            const container = document.getElementById('accommodations-list');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            accommodations.forEach(acc => {
+                const isSelected = selections.accommodations.includes(acc.id);
+                const div = document.createElement('div');
+                div.className = `option-card ${isSelected ? 'selected' : ''}`;
+                div.innerHTML = `
+                    <div class="option-title">${acc.name}</div>
+                    <div class="option-desc">${acc.desc}</div>
+                    <div class="option-desc">💰 ${acc.price}</div>
+                `;
+                div.onclick = () => {
+                    if (isSelected) {
+                        selections.accommodations = selections.accommodations.filter(id => id !== acc.id);
+                    } else {
+                        selections.accommodations.push(acc.id);
+                    }
+                    renderAccommodations();
+                };
+                container.appendChild(div);
+            });
+        }
+
+        // Функция отрисовки итога
+        function renderSummary() {
+            const container = document.getElementById('summary');
+            if (!container) return;
+            
+            const selectedCar = cars.find(c => c.id === selections.car);
+            const selectedLocations = locations.filter(l => selections.locations.includes(l.id));
+            const selectedAccommodations = accommodations.filter(a => selections.accommodations.includes(a.id));
+            
+            let html = '';
+            
+            // Машина
+            html += `<div class="section"><strong>🚗 Машина:</strong><br>`;
+            if (selectedCar) {
+                html += `${selectedCar.name} — ${selectedCar.price}`;
+            } else {
+                html += `<span style="color: red;">Не выбрана!</span>`;
+            }
+            html += `</div><br>`;
+            
+            // Локации
+            html += `<div class="section"><strong>📍 Локации (${selectedLocations.length}):</strong><br>`;
+            if (selectedLocations.length > 0) {
+                selectedLocations.forEach(l => {
+                    html += `• ${l.name} (${l.duration})<br>`;
+                });
+            } else {
+                html += `Не выбрано ни одной<br>`;
+            }
+            html += `</div><br>`;
+            
+            // Ночёвки
+            html += `<div class="section"><strong>🏨 Ночёвки (${selectedAccommodations.length}):</strong><br>`;
+            if (selectedAccommodations.length > 0) {
+                selectedAccommodations.forEach(a => {
+                    html += `• ${a.name} — ${a.price}<br>`;
+                });
+            } else {
+                html += `Не выбрано ни одной<br>`;
+            }
+            html += `</div><br>`;
+            
+            // Кнопка отправки
+            html += `<button id="submitTourBtn" class="btn-primary" style="margin-top: 20px;">📤 Отправить тур в Telegram</button>`;
+            
+            container.innerHTML = html;
+            
+            // Вешаем обработчик на кнопку отправки
+            const submitBtn = document.getElementById('submitTourBtn');
+            if (submitBtn) {
+                submitBtn.onclick = () => {
+                    submitTour();
+                };
+            }
+        }
+        
+        // Функция отправки данных в Telegram
+        function submitTour() {
+            if (!selections.car) {
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert("Сначала выберите машину!");
+                } else {
+                    alert("Сначала выберите машину!");
+                }
+                return;
+            }
+            
+            const selectedCar = cars.find(c => c.id === selections.car);
+            const selectedLocations = locations.filter(l => selections.locations.includes(l.id));
+            const selectedAccommodations = accommodations.filter(a => selections.accommodations.includes(a.id));
+            
+            const tourData = {
+                type: 'tour_construction',
+                car: selectedCar,
+                locations: selectedLocations,
+                accommodations: selectedAccommodations,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Отправляем в Telegram
+            if (window.Telegram?.WebApp) {
+                window.Telegram.WebApp.sendData(JSON.stringify(tourData));
+                window.Telegram.WebApp.showAlert("Тур отправлен! Бот скоро ответит.");
+            } else {
+                console.log("Данные тура:", tourData);
+                alert("Данные тура готовы (Telegram не обнаружен):\n" + JSON.stringify(tourData, null, 2));
+            }
+        }
+
+        // Обновление интерфейса (показываем нужный шаг)
+        function updateStep() {
+            // Прячем все шаги
+            for (let i = 1; i <= totalSteps; i++) {
+                const step = document.getElementById(`step${i}`);
+                if (step) step.classList.remove('active');
+            }
+            // Показываем текущий
+            const currentStepEl = document.getElementById(`step${currentStep}`);
+            if (currentStepEl) currentStepEl.classList.add('active');
+            
+            // Обновляем индикаторы
+            for (let i = 1; i <= totalSteps; i++) {
+                const dot = document.querySelector(`.step-dot[data-step="${i}"]`);
+                if (dot) {
+                    if (i === currentStep) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                }
+            }
+            
+            // Управление кнопками
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (currentStep === 1) {
+                prevBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'block';
+            }
+            
+            if (currentStep === totalSteps) {
+                nextBtn.textContent = '✅ Завершить';
+            } else {
+                nextBtn.textContent = 'Далее ▶';
+            }
+            
+            // Если текущий шаг — итог, перерисовываем его
+            if (currentStep === 4) {
+                renderSummary();
+            }
+        }
+        
+        // Проверка, можно ли перейти на следующий шаг
+        function canGoNext() {
+            if (currentStep === 1 && !selections.car) {
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.showAlert("Выберите машину!");
+                } else {
+                    alert("Выберите машину!");
+                }
+                return false;
+            }
+            return true;
+        }
+        
+        // Переход на следующий шаг
+        function nextStep() {
+            if (!canGoNext()) return;
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateStep();
+            } else if (currentStep === totalSteps) {
+                submitTour();
+            }
+        }
+        
+        // Переход на предыдущий шаг
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStep();
+            }
+        }
+        
+        // Инициализация Telegram WebApp
+        function initTelegram() {
+            const tg = window.Telegram?.WebApp;
+            if (tg) {
+                tg.ready();
+                tg.expand();
+                tg.enableClosingConfirmation();
+            }
+        }
+        
+        // Запуск приложения
+        function init() {
+            initTelegram();
+            renderCars();
+            renderLocations();
+            renderAccommodations();
+            updateStep();
+            
+            // Навешиваем обработчики на кнопки
+            document.getElementById('prevBtn').onclick = prevStep;
+            document.getElementById('nextBtn').onclick = nextStep;
+        }
+        
+        // Запускаем после загрузки страницы
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
