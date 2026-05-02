@@ -41,7 +41,6 @@
             opacity: 0.7;
         }
 
-        /* Сетка 2 колонки */
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -49,7 +48,6 @@
             margin-bottom: 20px;
         }
 
-        /* Карточка товара (плитка) */
         .product-card {
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             border-radius: 16px;
@@ -69,12 +67,6 @@
         .product-card.selected .product-price,
         .product-card.selected .product-desc {
             color: rgba(255,255,255,0.85);
-        }
-
-        .product-card.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            filter: grayscale(0.3);
         }
 
         .product-image {
@@ -116,7 +108,6 @@
             margin-top: 4px;
         }
 
-        /* Кнопки навигации */
         .nav-buttons {
             position: fixed;
             bottom: 0;
@@ -154,7 +145,6 @@
             color: var(--tg-theme-text-color, #000000);
         }
 
-        /* Индикатор шагов */
         .steps-indicator {
             display: flex;
             justify-content: center;
@@ -173,10 +163,6 @@
         .step-dot.active {
             width: 24px;
             background: var(--tg-theme-button-color, #3390ec);
-        }
-
-        .section {
-            margin-bottom: 15px;
         }
 
         .summary-item {
@@ -212,6 +198,32 @@
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             border-radius: 16px;
             margin: 20px 0;
+        }
+
+        .total-price {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px 0 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .total-price-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .total-price-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .total-price-note {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -252,6 +264,10 @@
     </div>
 
     <script>
+        // ТОКЕН БОТА (уже вставлен)
+        const BOT_TOKEN = '7975052771:AAGbeaxDFbc6Uf4B9nxLFj8X5VQzRWe6DhE';
+        const MANAGER_USERNAME = 'vitaliy0515';
+
         // МАШИНЫ
         const cars = [
             { 
@@ -259,6 +275,7 @@
                 name: "Toyota Land Cruiser", 
                 desc: "Внедорожник, 5 мест", 
                 price: "15 000₽/день",
+                priceValue: 15000,
                 image: "images/toyota.jpg"
             },
             { 
@@ -266,6 +283,7 @@
                 name: "Mitsubishi Delica", 
                 desc: "Микроавтобус, 7 мест", 
                 price: "12 000₽/день",
+                priceValue: 12000,
                 image: "images/delica.jpg"
             },
             { 
@@ -273,6 +291,7 @@
                 name: "Kia Sorento", 
                 desc: "Кроссовер, 5 мест", 
                 price: "8 000₽/день",
+                priceValue: 8000,
                 image: "images/kia.jpg"
             },
             { 
@@ -280,104 +299,65 @@
                 name: "УАЗ Буханка", 
                 desc: "Для бездорожья", 
                 price: "7 000₽/день",
+                priceValue: 7000,
                 image: "images/uaz.jpg"
             }
         ];
 
         // ЛОКАЦИИ
         const locations = [
-            { id: 1, name: "Гора Белуха", desc: "Высочайшая точка Алтая", duration: "1 день", image: "images/belukha.jpg" },
-            { id: 2, name: "Телецкое озеро", desc: "Жемчужина Алтая", duration: "2 дня", image: "images/teleckoe.jpg" },
-            { id: 3, name: "Марсианские горы", desc: "Необычные красные скалы", duration: "1 день", image: "images/marsianskie.jpg" },
-            { id: 4, name: "Чуйский тракт", desc: "Одна из красивейших дорог", duration: "2 дня", image: "images/chuiskiy.jpg" }
+            { id: 1, name: "Гора Белуха", desc: "Высочайшая точка Алтая", duration: "1 день", durationDays: 1, image: "images/belukha.jpg" },
+            { id: 2, name: "Телецкое озеро", desc: "Жемчужина Алтая", duration: "2 дня", durationDays: 2, image: "images/teleckoe.jpg" },
+            { id: 3, name: "Марсианские горы", desc: "Необычные красные скалы", duration: "1 день", durationDays: 1, image: "images/marsianskie.jpg" },
+            { id: 4, name: "Чуйский тракт", desc: "Одна из красивейших дорог", duration: "2 дня", durationDays: 2, image: "images/chuiskiy.jpg" }
         ];
 
-        // НОЧЁВКИ с привязкой к локациям (locationId)
+        // НОЧЁВКИ
         const accommodations = [
-            { 
-                id: 1, 
-                name: "Глэмпинг \"Звездная ночь\"", 
-                desc: "Палатки с удобствами", 
-                price: "5 000₽/ночь", 
-                image: "images/glamping.jpg",
-                locationId: 1  // привязан к Горе Белуха
-            },
-            { 
-                id: 2, 
-                name: "База отдыха \"Белуха\"", 
-                desc: "Гостевой дом у подножия", 
-                price: "4 500₽/ночь", 
-                image: "images/belukha-base.jpg",
-                locationId: 1  // привязан к Горе Белуха
-            },
-            { 
-                id: 3, 
-                name: "База отдыха \"Тишина\"", 
-                desc: "Домики у озера", 
-                price: "3 500₽/ночь", 
-                image: "images/tishina.jpg",
-                locationId: 2  // привязан к Телецкому озеру
-            },
-            { 
-                id: 4, 
-                name: "Кемпинг \"Озерный\"", 
-                desc: "Прямо на берегу", 
-                price: "2 500₽/ночь", 
-                image: "images/lake-camp.jpg",
-                locationId: 2  // привязан к Телецкому озеру
-            },
-            { 
-                id: 5, 
-                name: "Гостиница \"Марс\"", 
-                desc: "Рядом с марсианскими горами", 
-                price: "4 000₽/ночь", 
-                image: "images/mars-hotel.jpg",
-                locationId: 3  // привязан к Марсианским горам
-            },
-            { 
-                id: 6, 
-                name: "Кемпинг \"У костра\"", 
-                desc: "Палатки, общая кухня", 
-                price: "1 500₽/ночь", 
-                image: "images/koster.jpg",
-                locationId: 3  // привязан к Марсианским горам
-            },
-            { 
-                id: 7, 
-                name: "Гостиница \"Центральная\"", 
-                desc: "В центре города", 
-                price: "4 000₽/ночь", 
-                image: "images/central.jpg",
-                locationId: 4  // привязан к Чуйскому тракту
-            },
-            { 
-                id: 8, 
-                name: "Мотель \"Тракт\"", 
-                desc: "Прямо на трассе", 
-                price: "2 800₽/ночь", 
-                image: "images/tract-motel.jpg",
-                locationId: 4  // привязан к Чуйскому тракту
-            }
+            { id: 1, name: "Глэмпинг \"Звездная ночь\"", desc: "Палатки с удобствами", price: "5 000₽/ночь", priceValue: 5000, image: "images/glamping.jpg", locationId: 1 },
+            { id: 2, name: "База отдыха \"Белуха\"", desc: "Гостевой дом у подножия", price: "4 500₽/ночь", priceValue: 4500, image: "images/belukha-base.jpg", locationId: 1 },
+            { id: 3, name: "База отдыха \"Тишина\"", desc: "Домики у озера", price: "3 500₽/ночь", priceValue: 3500, image: "images/tishina.jpg", locationId: 2 },
+            { id: 4, name: "Кемпинг \"Озерный\"", desc: "Прямо на берегу", price: "2 500₽/ночь", priceValue: 2500, image: "images/lake-camp.jpg", locationId: 2 },
+            { id: 5, name: "Гостиница \"Марс\"", desc: "Рядом с марсианскими горами", price: "4 000₽/ночь", priceValue: 4000, image: "images/mars-hotel.jpg", locationId: 3 },
+            { id: 6, name: "Кемпинг \"У костра\"", desc: "Палатки, общая кухня", price: "1 500₽/ночь", priceValue: 1500, image: "images/koster.jpg", locationId: 3 },
+            { id: 7, name: "Гостиница \"Центральная\"", desc: "В центре города", price: "4 000₽/ночь", priceValue: 4000, image: "images/central.jpg", locationId: 4 },
+            { id: 8, name: "Мотель \"Тракт\"", desc: "Прямо на трассе", price: "2 800₽/ночь", priceValue: 2800, image: "images/tract-motel.jpg", locationId: 4 }
         ];
 
         let selections = {
             car: null,
-            locations: [],      // ID выбранных локаций
-            accommodations: []  // ID выбранных ночёвок
+            locations: [],
+            accommodations: []
         };
 
         let currentStep = 1;
         const totalSteps = 4;
 
-        // Получить доступные ночёвки на основе выбранных локаций
-        function getAvailableAccommodations() {
-            if (selections.locations.length === 0) {
-                return [];  // Если локации не выбраны — ничего не показываем
+        function calculateTotalPrice() {
+            let total = 0;
+            
+            const selectedCar = cars.find(c => c.id === selections.car);
+            if (selectedCar) {
+                const totalDays = selections.locations.reduce((sum, locId) => {
+                    const loc = locations.find(l => l.id === locId);
+                    return sum + (loc?.durationDays || 0);
+                }, 0);
+                total += selectedCar.priceValue * totalDays;
             }
+            
+            selections.accommodations.forEach(accId => {
+                const acc = accommodations.find(a => a.id === accId);
+                if (acc) total += acc.priceValue;
+            });
+            
+            return total;
+        }
+
+        function getAvailableAccommodations() {
+            if (selections.locations.length === 0) return [];
             return accommodations.filter(acc => selections.locations.includes(acc.locationId));
         }
 
-        // Функция рендера машин
         function renderCars() {
             const container = document.getElementById('cars-list');
             if (!container) return;
@@ -403,7 +383,6 @@
             });
         }
 
-        // Функция рендера локаций
         function renderLocations() {
             const container = document.getElementById('locations-list');
             if (!container) return;
@@ -428,49 +407,40 @@
                         selections.locations.push(loc.id);
                     }
                     renderLocations();
-                    // Если уже были на шаге ночёвок — обновляем их при изменении локаций
-                    if (currentStep === 3) {
-                        renderAccommodations();
-                    }
+                    if (currentStep === 3) renderAccommodations();
                 };
                 container.appendChild(div);
             });
         }
 
-        // Функция рендера ночёвок (только доступные по выбранным локациям)
         function renderAccommodations() {
             const container = document.getElementById('accommodations-list');
             const subtitle = document.getElementById('accommodations-subtitle');
             if (!container) return;
             
-            const availableAccommodations = getAvailableAccommodations();
-            const selectedLocationNames = locations
-                .filter(l => selections.locations.includes(l.id))
-                .map(l => l.name)
-                .join(', ');
+            const available = getAvailableAccommodations();
+            const selectedNames = locations.filter(l => selections.locations.includes(l.id)).map(l => l.name).join(', ');
             
-            // Обновляем подзаголовок
             if (subtitle) {
                 if (selections.locations.length === 0) {
                     subtitle.innerHTML = '⚠️ Сначала выберите локации на предыдущем шаге';
                     subtitle.style.color = '#ff3b30';
                 } else {
-                    subtitle.innerHTML = `Для выбранных локаций: ${selectedLocationNames}`;
+                    subtitle.innerHTML = `📍 Для выбранных локаций: ${selectedNames}`;
                     subtitle.style.color = 'inherit';
                 }
             }
             
             container.innerHTML = '';
             
-            if (availableAccommodations.length === 0) {
-                container.innerHTML = '<div class="info-message">🏔️ Для выбранных локаций пока нет предложений по ночёвкам. Вернитесь и выберите другие локации.</div>';
+            if (available.length === 0 && selections.locations.length > 0) {
+                container.innerHTML = '<div class="info-message">🏔️ Для выбранных локаций пока нет предложений по ночёвкам.</div>';
                 return;
             }
             
-            availableAccommodations.forEach(acc => {
+            available.forEach(acc => {
                 const isSelected = selections.accommodations.includes(acc.id);
                 const relatedLocation = locations.find(l => l.id === acc.locationId);
-                
                 const div = document.createElement('div');
                 div.className = `product-card ${isSelected ? 'selected' : ''}`;
                 div.innerHTML = `
@@ -494,14 +464,15 @@
             });
         }
 
-        // Функция отрисовки итога
         function renderSummary() {
             const container = document.getElementById('summary');
             if (!container) return;
             
             const selectedCar = cars.find(c => c.id === selections.car);
-            const selectedLocations = locations.filter(l => selections.locations.includes(l.id));
-            const selectedAccommodations = accommodations.filter(a => selections.accommodations.includes(a.id));
+            const selectedLocs = locations.filter(l => selections.locations.includes(l.id));
+            const selectedAccs = accommodations.filter(a => selections.accommodations.includes(a.id));
+            const totalPrice = calculateTotalPrice();
+            const totalDays = selectedLocs.reduce((sum, loc) => sum + loc.durationDays, 0);
             
             let html = '';
             
@@ -511,7 +482,7 @@
                         <img class="summary-image" src="${selectedCar.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'">
                         <div class="summary-info">
                             <strong>🚗 ${selectedCar.name}</strong><br>
-                            ${selectedCar.price}
+                            ${selectedCar.price} × ${totalDays} дн. = ${selectedCar.priceValue * totalDays}₽
                         </div>
                     </div>
                 `;
@@ -519,8 +490,8 @@
                 html += `<div class="warning">⚠️ Машина не выбрана</div>`;
             }
             
-            if (selectedLocations.length > 0) {
-                selectedLocations.forEach(loc => {
+            if (selectedLocs.length > 0) {
+                selectedLocs.forEach(loc => {
                     html += `
                         <div class="summary-item">
                             <img class="summary-image" src="${loc.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'">
@@ -535,16 +506,16 @@
                 html += `<div class="warning">⚠️ Локации не выбраны</div>`;
             }
             
-            if (selectedAccommodations.length > 0) {
-                selectedAccommodations.forEach(acc => {
+            if (selectedAccs.length > 0) {
+                selectedAccs.forEach(acc => {
                     const relatedLocation = locations.find(l => l.id === acc.locationId);
                     html += `
                         <div class="summary-item">
                             <img class="summary-image" src="${acc.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'">
                             <div class="summary-info">
                                 <strong>🏨 ${acc.name}</strong><br>
-                                ${acc.price}<br>
-                                <small>📍 ${relatedLocation?.name || ''}</small>
+                                ${acc.price}
+                                <small><br>📍 ${relatedLocation?.name || ''}</small>
                             </div>
                         </div>
                     `;
@@ -553,47 +524,162 @@
                 html += `<div class="warning">⚠️ Ночёвки не выбраны</div>`;
             }
             
-            html += `<button id="submitTourBtn" class="btn-primary" style="margin-top: 20px;">📤 Отправить тур в Telegram</button>`;
+            html += `
+                <div class="total-price">
+                    <div class="total-price-label">💰 Итоговая стоимость тура</div>
+                    <div class="total-price-value">${totalPrice.toLocaleString()} ₽</div>
+                    <div class="total-price-note">Включает аренду авто и проживание</div>
+                </div>
+            `;
             
             container.innerHTML = html;
+        }
+        
+        function formatTourMessage(userData) {
+            const selectedCar = cars.find(c => c.id === selections.car);
+            const selectedLocs = locations.filter(l => selections.locations.includes(l.id));
+            const selectedAccs = accommodations.filter(a => selections.accommodations.includes(a.id));
+            const totalPrice = calculateTotalPrice();
+            const totalDays = selectedLocs.reduce((sum, loc) => sum + loc.durationDays, 0);
             
-            const submitBtn = document.getElementById('submitTourBtn');
-            if (submitBtn) {
-                submitBtn.onclick = () => {
-                    submitTour();
-                };
+            let message = "🏔️ *НОВАЯ ЗАЯВКА НА ТУР* 🏔️\n\n";
+            message += `👤 *Клиент:* ${userData.first_name || 'Не указано'} ${userData.last_name || ''}\n`;
+            message += `🆔 *Telegram ID:* ${userData.id || 'Не известно'}\n`;
+            if (userData.username) message += `📱 *Username:* @${userData.username}\n`;
+            message += `\n━━━━━━━━━━━━━━━━━━\n`;
+            message += `🚗 *АВТОМОБИЛЬ*\n`;
+            if (selectedCar) {
+                message += `▫ ${selectedCar.name}\n`;
+                message += `▫ ${selectedCar.price} × ${totalDays} дн. = ${selectedCar.priceValue * totalDays}₽\n`;
+            } else {
+                message += `❌ Не выбран\n`;
+            }
+            message += `\n📍 *ЛОКАЦИИ (${selectedLocs.length})*\n`;
+            if (selectedLocs.length > 0) {
+                selectedLocs.forEach(loc => {
+                    message += `▫ ${loc.name} — ${loc.duration}\n`;
+                });
+            } else {
+                message += `❌ Не выбраны\n`;
+            }
+            message += `\n🏨 *ПРОЖИВАНИЕ (${selectedAccs.length})*\n`;
+            if (selectedAccs.length > 0) {
+                selectedAccs.forEach(acc => {
+                    const relatedLocation = locations.find(l => l.id === acc.locationId);
+                    message += `▫ ${acc.name} — ${acc.price}\n`;
+                    message += `  (📍 ${relatedLocation?.name})\n`;
+                });
+            } else {
+                message += `❌ Не выбрано\n`;
+            }
+            message += `\n━━━━━━━━━━━━━━━━━━\n`;
+            message += `💰 *ИТОГО:* ${totalPrice.toLocaleString()} ₽\n`;
+            message += `📅 *Дата заявки:* ${new Date().toLocaleString('ru-RU')}\n`;
+            
+            return message;
+        }
+        
+        async function sendToTelegramBot(message) {
+            const tg = window.Telegram?.WebApp;
+            const userId = tg?.initDataUnsafe?.user?.id;
+            
+            try {
+                // 1. Отправляем сообщение пользователю
+                if (userId) {
+                    const userUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+                    await fetch(userUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: userId,
+                            text: message,
+                            parse_mode: 'Markdown'
+                        })
+                    });
+                }
+                
+                // 2. Отправляем сообщение менеджеру
+                const managerUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+                await fetch(managerUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: `@${MANAGER_USERNAME}`,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+                
+                return true;
+            } catch (error) {
+                console.error('Ошибка отправки:', error);
+                return false;
             }
         }
         
-        function submitTour() {
+        async function submitTour() {
             if (!selections.car) {
-                if (window.Telegram?.WebApp) {
-                    window.Telegram.WebApp.showAlert("Сначала выберите машину!");
-                } else {
-                    alert("Сначала выберите машину!");
-                }
-                return;
+                const msg = "Сначала выберите машину!";
+                window.Telegram?.WebApp ? window.Telegram.WebApp.showAlert(msg) : alert(msg);
+                return false;
             }
             
-            const selectedCar = cars.find(c => c.id === selections.car);
-            const selectedLocations = locations.filter(l => selections.locations.includes(l.id));
-            const selectedAccommodations = accommodations.filter(a => selections.accommodations.includes(a.id));
+            if (selections.locations.length === 0) {
+                const msg = "Выберите хотя бы одну локацию!";
+                window.Telegram?.WebApp ? window.Telegram.WebApp.showAlert(msg) : alert(msg);
+                return false;
+            }
+            
+            const tg = window.Telegram?.WebApp;
+            const userData = tg?.initDataUnsafe?.user || { first_name: 'Гость', id: 'Неизвестно' };
+            const message = formatTourMessage(userData);
             
             const tourData = {
                 type: 'tour_construction',
-                car: selectedCar,
-                locations: selectedLocations,
-                accommodations: selectedAccommodations,
+                car: cars.find(c => c.id === selections.car),
+                locations: locations.filter(l => selections.locations.includes(l.id)),
+                accommodations: accommodations.filter(a => selections.accommodations.includes(a.id)),
+                totalPrice: calculateTotalPrice(),
+                user: userData,
                 timestamp: new Date().toISOString()
             };
             
-            if (window.Telegram?.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify(tourData));
-                window.Telegram.WebApp.showAlert("Тур отправлен! Бот скоро ответит.");
-            } else {
-                console.log("Данные тура:", tourData);
-                alert("Данные тура готовы:\n" + JSON.stringify(tourData, null, 2));
+            console.log('Данные тура:', tourData);
+            
+            if (tg) {
+                tg.showPopup({
+                    title: 'Отправка заявки',
+                    message: 'Отправляем ваш тур...',
+                    buttons: [{ type: 'ok' }]
+                });
             }
+            
+            const sent = await sendToTelegramBot(message);
+            
+            if (sent) {
+                if (tg) {
+                    tg.showPopup({
+                        title: '✅ Заявка отправлена!',
+                        message: 'Ваш тур отправлен менеджеру. Скоро с вами свяжутся!',
+                        buttons: [{ type: 'ok' }]
+                    });
+                    tg.close();
+                } else {
+                    alert('Тур собран!\n\n' + message);
+                }
+            } else {
+                if (tg) {
+                    tg.showPopup({
+                        title: '⚠️ Ошибка отправки',
+                        message: 'Не удалось отправить заявку. Попробуйте позже.\n\nДанные тура сохранены.',
+                        buttons: [{ type: 'ok' }]
+                    });
+                } else {
+                    alert('Ошибка отправки. Данные тура:\n\n' + message);
+                }
+            }
+            
+            return true;
         }
 
         function updateStep() {
@@ -601,59 +687,34 @@
                 const step = document.getElementById(`step${i}`);
                 if (step) step.classList.remove('active');
             }
-            const currentStepEl = document.getElementById(`step${currentStep}`);
-            if (currentStepEl) currentStepEl.classList.add('active');
+            document.getElementById(`step${currentStep}`)?.classList.add('active');
             
             for (let i = 1; i <= totalSteps; i++) {
                 const dot = document.querySelector(`.step-dot[data-step="${i}"]`);
                 if (dot) {
-                    if (i === currentStep) {
-                        dot.classList.add('active');
-                    } else {
-                        dot.classList.remove('active');
-                    }
+                    i === currentStep ? dot.classList.add('active') : dot.classList.remove('active');
                 }
             }
             
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
             
-            if (currentStep === 1) {
-                prevBtn.style.display = 'none';
-            } else {
-                prevBtn.style.display = 'block';
-            }
+            prevBtn.style.display = currentStep === 1 ? 'none' : 'block';
+            nextBtn.textContent = currentStep === totalSteps ? '✅ Отправить тур' : 'Далее ▶';
             
-            if (currentStep === totalSteps) {
-                nextBtn.textContent = '✅ Завершить';
-            } else {
-                nextBtn.textContent = 'Далее ▶';
-            }
-            
-            if (currentStep === 3) {
-                renderAccommodations();  // Перерисовываем ночёвки при переходе на шаг 3
-            }
-            
-            if (currentStep === 4) {
-                renderSummary();
-            }
+            if (currentStep === 3) renderAccommodations();
+            if (currentStep === 4) renderSummary();
         }
         
         function canGoNext() {
             if (currentStep === 1 && !selections.car) {
-                if (window.Telegram?.WebApp) {
-                    window.Telegram.WebApp.showAlert("Выберите машину!");
-                } else {
-                    alert("Выберите машину!");
-                }
+                const msg = "Выберите машину!";
+                window.Telegram?.WebApp ? window.Telegram.WebApp.showAlert(msg) : alert(msg);
                 return false;
             }
             if (currentStep === 2 && selections.locations.length === 0) {
-                if (window.Telegram?.WebApp) {
-                    window.Telegram.WebApp.showAlert("Выберите хотя бы одну локацию!");
-                } else {
-                    alert("Выберите хотя бы одну локацию!");
-                }
+                const msg = "Выберите хотя бы одну локацию!";
+                window.Telegram?.WebApp ? window.Telegram.WebApp.showAlert(msg) : alert(msg);
                 return false;
             }
             return true;
