@@ -264,47 +264,14 @@
     </div>
 
     <script>
-        // ТОКЕН БОТА (уже вставлен)
-        const BOT_TOKEN = '7975052771:AAGbeaxDFbc6Uf4B9nxLFj8X5VQzRWe6DhE';
-        const MANAGER_USERNAME = 'vitaliy0515';
-
-        // МАШИНЫ
+        // Данные (машины, локации, ночёвки)
         const cars = [
-            { 
-                id: 1, 
-                name: "Toyota Land Cruiser", 
-                desc: "Внедорожник, 5 мест", 
-                price: "15 000₽/день",
-                priceValue: 15000,
-                image: "images/toyota.jpg"
-            },
-            { 
-                id: 2, 
-                name: "Mitsubishi Delica", 
-                desc: "Микроавтобус, 7 мест", 
-                price: "12 000₽/день",
-                priceValue: 12000,
-                image: "images/delica.jpg"
-            },
-            { 
-                id: 3, 
-                name: "Kia Sorento", 
-                desc: "Кроссовер, 5 мест", 
-                price: "8 000₽/день",
-                priceValue: 8000,
-                image: "images/kia.jpg"
-            },
-            { 
-                id: 4, 
-                name: "УАЗ Буханка", 
-                desc: "Для бездорожья", 
-                price: "7 000₽/день",
-                priceValue: 7000,
-                image: "images/uaz.jpg"
-            }
+            { id: 1, name: "Toyota Land Cruiser", desc: "Внедорожник, 5 мест", price: "15 000₽/день", priceValue: 15000, image: "images/toyota.jpg" },
+            { id: 2, name: "Mitsubishi Delica", desc: "Микроавтобус, 7 мест", price: "12 000₽/день", priceValue: 12000, image: "images/delica.jpg" },
+            { id: 3, name: "Kia Sorento", desc: "Кроссовер, 5 мест", price: "8 000₽/день", priceValue: 8000, image: "images/kia.jpg" },
+            { id: 4, name: "УАЗ Буханка", desc: "Для бездорожья", price: "7 000₽/день", priceValue: 7000, image: "images/uaz.jpg" }
         ];
 
-        // ЛОКАЦИИ
         const locations = [
             { id: 1, name: "Гора Белуха", desc: "Высочайшая точка Алтая", duration: "1 день", durationDays: 1, image: "images/belukha.jpg" },
             { id: 2, name: "Телецкое озеро", desc: "Жемчужина Алтая", duration: "2 дня", durationDays: 2, image: "images/teleckoe.jpg" },
@@ -312,7 +279,6 @@
             { id: 4, name: "Чуйский тракт", desc: "Одна из красивейших дорог", duration: "2 дня", durationDays: 2, image: "images/chuiskiy.jpg" }
         ];
 
-        // НОЧЁВКИ
         const accommodations = [
             { id: 1, name: "Глэмпинг \"Звездная ночь\"", desc: "Палатки с удобствами", price: "5 000₽/ночь", priceValue: 5000, image: "images/glamping.jpg", locationId: 1 },
             { id: 2, name: "База отдыха \"Белуха\"", desc: "Гостевой дом у подножия", price: "4 500₽/ночь", priceValue: 4500, image: "images/belukha-base.jpg", locationId: 1 },
@@ -335,7 +301,6 @@
 
         function calculateTotalPrice() {
             let total = 0;
-            
             const selectedCar = cars.find(c => c.id === selections.car);
             if (selectedCar) {
                 const totalDays = selections.locations.reduce((sum, locId) => {
@@ -344,12 +309,10 @@
                 }, 0);
                 total += selectedCar.priceValue * totalDays;
             }
-            
             selections.accommodations.forEach(accId => {
                 const acc = accommodations.find(a => a.id === accId);
                 if (acc) total += acc.priceValue;
             });
-            
             return total;
         }
 
@@ -361,7 +324,6 @@
         function renderCars() {
             const container = document.getElementById('cars-list');
             if (!container) return;
-            
             container.innerHTML = '';
             cars.forEach(car => {
                 const isSelected = selections.car === car.id;
@@ -375,10 +337,7 @@
                         <div class="product-price">${car.price}</div>
                     </div>
                 `;
-                div.onclick = () => {
-                    selections.car = car.id;
-                    renderCars();
-                };
+                div.onclick = () => { selections.car = car.id; renderCars(); };
                 container.appendChild(div);
             });
         }
@@ -386,7 +345,6 @@
         function renderLocations() {
             const container = document.getElementById('locations-list');
             if (!container) return;
-            
             container.innerHTML = '';
             locations.forEach(loc => {
                 const isSelected = selections.locations.includes(loc.id);
@@ -417,10 +375,8 @@
             const container = document.getElementById('accommodations-list');
             const subtitle = document.getElementById('accommodations-subtitle');
             if (!container) return;
-            
             const available = getAvailableAccommodations();
             const selectedNames = locations.filter(l => selections.locations.includes(l.id)).map(l => l.name).join(', ');
-            
             if (subtitle) {
                 if (selections.locations.length === 0) {
                     subtitle.innerHTML = '⚠️ Сначала выберите локации на предыдущем шаге';
@@ -430,14 +386,11 @@
                     subtitle.style.color = 'inherit';
                 }
             }
-            
             container.innerHTML = '';
-            
             if (available.length === 0 && selections.locations.length > 0) {
                 container.innerHTML = '<div class="info-message">🏔️ Для выбранных локаций пока нет предложений по ночёвкам.</div>';
                 return;
             }
-            
             available.forEach(acc => {
                 const isSelected = selections.accommodations.includes(acc.id);
                 const relatedLocation = locations.find(l => l.id === acc.locationId);
@@ -467,219 +420,79 @@
         function renderSummary() {
             const container = document.getElementById('summary');
             if (!container) return;
-            
             const selectedCar = cars.find(c => c.id === selections.car);
             const selectedLocs = locations.filter(l => selections.locations.includes(l.id));
             const selectedAccs = accommodations.filter(a => selections.accommodations.includes(a.id));
             const totalPrice = calculateTotalPrice();
             const totalDays = selectedLocs.reduce((sum, loc) => sum + loc.durationDays, 0);
-            
             let html = '';
-            
             if (selectedCar) {
-                html += `
-                    <div class="summary-item">
-                        <img class="summary-image" src="${selectedCar.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'">
-                        <div class="summary-info">
-                            <strong>🚗 ${selectedCar.name}</strong><br>
-                            ${selectedCar.price} × ${totalDays} дн. = ${selectedCar.priceValue * totalDays}₽
-                        </div>
-                    </div>
-                `;
+                html += `<div class="summary-item"><img class="summary-image" src="${selectedCar.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'"><div class="summary-info"><strong>🚗 ${selectedCar.name}</strong><br>${selectedCar.price} × ${totalDays} дн. = ${selectedCar.priceValue * totalDays}₽</div></div>`;
             } else {
                 html += `<div class="warning">⚠️ Машина не выбрана</div>`;
             }
-            
             if (selectedLocs.length > 0) {
                 selectedLocs.forEach(loc => {
-                    html += `
-                        <div class="summary-item">
-                            <img class="summary-image" src="${loc.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'">
-                            <div class="summary-info">
-                                <strong>📍 ${loc.name}</strong><br>
-                                ${loc.duration}
-                            </div>
-                        </div>
-                    `;
+                    html += `<div class="summary-item"><img class="summary-image" src="${loc.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'"><div class="summary-info"><strong>📍 ${loc.name}</strong><br>${loc.duration}</div></div>`;
                 });
             } else {
                 html += `<div class="warning">⚠️ Локации не выбраны</div>`;
             }
-            
             if (selectedAccs.length > 0) {
                 selectedAccs.forEach(acc => {
                     const relatedLocation = locations.find(l => l.id === acc.locationId);
-                    html += `
-                        <div class="summary-item">
-                            <img class="summary-image" src="${acc.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'">
-                            <div class="summary-info">
-                                <strong>🏨 ${acc.name}</strong><br>
-                                ${acc.price}
-                                <small><br>📍 ${relatedLocation?.name || ''}</small>
-                            </div>
-                        </div>
-                    `;
+                    html += `<div class="summary-item"><img class="summary-image" src="${acc.image}" onerror="this.src='https://via.placeholder.com/50x50?text=Фото'"><div class="summary-info"><strong>🏨 ${acc.name}</strong><br>${acc.price}<br><small>📍 ${relatedLocation?.name || ''}</small></div></div>`;
                 });
             } else {
                 html += `<div class="warning">⚠️ Ночёвки не выбраны</div>`;
             }
-            
-            html += `
-                <div class="total-price">
-                    <div class="total-price-label">💰 Итоговая стоимость тура</div>
-                    <div class="total-price-value">${totalPrice.toLocaleString()} ₽</div>
-                    <div class="total-price-note">Включает аренду авто и проживание</div>
-                </div>
-            `;
-            
+            html += `<div class="total-price"><div class="total-price-label">💰 Итоговая стоимость тура</div><div class="total-price-value">${totalPrice.toLocaleString()} ₽</div><div class="total-price-note">Включает аренду авто и проживание</div></div>`;
             container.innerHTML = html;
         }
         
-        function formatTourMessage(userData) {
-            const selectedCar = cars.find(c => c.id === selections.car);
-            const selectedLocs = locations.filter(l => selections.locations.includes(l.id));
-            const selectedAccs = accommodations.filter(a => selections.accommodations.includes(a.id));
-            const totalPrice = calculateTotalPrice();
-            const totalDays = selectedLocs.reduce((sum, loc) => sum + loc.durationDays, 0);
-            
-            let message = "🏔️ *НОВАЯ ЗАЯВКА НА ТУР* 🏔️\n\n";
-            message += `👤 *Клиент:* ${userData.first_name || 'Не указано'} ${userData.last_name || ''}\n`;
-            message += `🆔 *Telegram ID:* ${userData.id || 'Не известно'}\n`;
-            if (userData.username) message += `📱 *Username:* @${userData.username}\n`;
-            message += `\n━━━━━━━━━━━━━━━━━━\n`;
-            message += `🚗 *АВТОМОБИЛЬ*\n`;
-            if (selectedCar) {
-                message += `▫ ${selectedCar.name}\n`;
-                message += `▫ ${selectedCar.price} × ${totalDays} дн. = ${selectedCar.priceValue * totalDays}₽\n`;
-            } else {
-                message += `❌ Не выбран\n`;
-            }
-            message += `\n📍 *ЛОКАЦИИ (${selectedLocs.length})*\n`;
-            if (selectedLocs.length > 0) {
-                selectedLocs.forEach(loc => {
-                    message += `▫ ${loc.name} — ${loc.duration}\n`;
-                });
-            } else {
-                message += `❌ Не выбраны\n`;
-            }
-            message += `\n🏨 *ПРОЖИВАНИЕ (${selectedAccs.length})*\n`;
-            if (selectedAccs.length > 0) {
-                selectedAccs.forEach(acc => {
-                    const relatedLocation = locations.find(l => l.id === acc.locationId);
-                    message += `▫ ${acc.name} — ${acc.price}\n`;
-                    message += `  (📍 ${relatedLocation?.name})\n`;
-                });
-            } else {
-                message += `❌ Не выбрано\n`;
-            }
-            message += `\n━━━━━━━━━━━━━━━━━━\n`;
-            message += `💰 *ИТОГО:* ${totalPrice.toLocaleString()} ₽\n`;
-            message += `📅 *Дата заявки:* ${new Date().toLocaleString('ru-RU')}\n`;
-            
-            return message;
-        }
-        
-        async function sendToTelegramBot(message) {
-            const tg = window.Telegram?.WebApp;
-            const userId = tg?.initDataUnsafe?.user?.id;
-            
-            try {
-                // 1. Отправляем сообщение пользователю
-                if (userId) {
-                    const userUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-                    await fetch(userUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: userId,
-                            text: message,
-                            parse_mode: 'Markdown'
-                        })
-                    });
-                }
-                
-                // 2. Отправляем сообщение менеджеру
-                const managerUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-                await fetch(managerUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: `@${MANAGER_USERNAME}`,
-                        text: message,
-                        parse_mode: 'Markdown'
-                    })
-                });
-                
-                return true;
-            } catch (error) {
-                console.error('Ошибка отправки:', error);
-                return false;
-            }
-        }
-        
-        async function submitTour() {
+        // ОТПРАВКА ДАННЫХ БОТУ (через tg.sendData)
+        function submitTour() {
             if (!selections.car) {
-                const msg = "Сначала выберите машину!";
-                window.Telegram?.WebApp ? window.Telegram.WebApp.showAlert(msg) : alert(msg);
-                return false;
+                window.Telegram?.WebApp.showAlert("Выберите машину!");
+                return;
             }
-            
             if (selections.locations.length === 0) {
-                const msg = "Выберите хотя бы одну локацию!";
-                window.Telegram?.WebApp ? window.Telegram.WebApp.showAlert(msg) : alert(msg);
-                return false;
+                window.Telegram?.WebApp.showAlert("Выберите хотя бы одну локацию!");
+                return;
             }
             
             const tg = window.Telegram?.WebApp;
-            const userData = tg?.initDataUnsafe?.user || { first_name: 'Гость', id: 'Неизвестно' };
-            const message = formatTourMessage(userData);
+            const userData = tg?.initDataUnsafe?.user || {};
             
             const tourData = {
                 type: 'tour_construction',
+                user: {
+                    id: userData.id,
+                    first_name: userData.first_name,
+                    last_name: userData.last_name,
+                    username: userData.username
+                },
                 car: cars.find(c => c.id === selections.car),
                 locations: locations.filter(l => selections.locations.includes(l.id)),
                 accommodations: accommodations.filter(a => selections.accommodations.includes(a.id)),
                 totalPrice: calculateTotalPrice(),
-                user: userData,
                 timestamp: new Date().toISOString()
             };
             
-            console.log('Данные тура:', tourData);
+            console.log('Отправляем данные боту:', tourData);
             
-            if (tg) {
-                tg.showPopup({
-                    title: 'Отправка заявки',
-                    message: 'Отправляем ваш тур...',
-                    buttons: [{ type: 'ok' }]
-                });
-            }
+            // Отправляем данные боту через Telegram WebApp
+            tg.sendData(JSON.stringify(tourData));
             
-            const sent = await sendToTelegramBot(message);
+            // Показываем уведомление об успешной отправке
+            tg.showPopup({
+                title: '✅ Заявка отправлена!',
+                message: 'Ваш тур отправлен менеджеру. Скоро с вами свяжутся!',
+                buttons: [{ type: 'ok' }]
+            });
             
-            if (sent) {
-                if (tg) {
-                    tg.showPopup({
-                        title: '✅ Заявка отправлена!',
-                        message: 'Ваш тур отправлен менеджеру. Скоро с вами свяжутся!',
-                        buttons: [{ type: 'ok' }]
-                    });
-                    tg.close();
-                } else {
-                    alert('Тур собран!\n\n' + message);
-                }
-            } else {
-                if (tg) {
-                    tg.showPopup({
-                        title: '⚠️ Ошибка отправки',
-                        message: 'Не удалось отправить заявку. Попробуйте позже.\n\nДанные тура сохранены.',
-                        buttons: [{ type: 'ok' }]
-                    });
-                } else {
-                    alert('Ошибка отправки. Данные тура:\n\n' + message);
-                }
-            }
-            
-            return true;
+            // Закрываем приложение
+            tg.close();
         }
 
         function updateStep() {
@@ -688,33 +501,27 @@
                 if (step) step.classList.remove('active');
             }
             document.getElementById(`step${currentStep}`)?.classList.add('active');
-            
             for (let i = 1; i <= totalSteps; i++) {
                 const dot = document.querySelector(`.step-dot[data-step="${i}"]`);
                 if (dot) {
                     i === currentStep ? dot.classList.add('active') : dot.classList.remove('active');
                 }
             }
-            
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
-            
             prevBtn.style.display = currentStep === 1 ? 'none' : 'block';
             nextBtn.textContent = currentStep === totalSteps ? '✅ Отправить тур' : 'Далее ▶';
-            
             if (currentStep === 3) renderAccommodations();
             if (currentStep === 4) renderSummary();
         }
         
         function canGoNext() {
             if (currentStep === 1 && !selections.car) {
-                const msg = "Выберите машину!";
-                window.Telegram?.WebApp ? window.Telegram.WebApp.showAlert(msg) : alert(msg);
+                window.Telegram?.WebApp.showAlert("Выберите машину!");
                 return false;
             }
             if (currentStep === 2 && selections.locations.length === 0) {
-                const msg = "Выберите хотя бы одну локацию!";
-                window.Telegram?.WebApp ? window.Telegram.WebApp.showAlert(msg) : alert(msg);
+                window.Telegram?.WebApp.showAlert("Выберите хотя бы одну локацию!");
                 return false;
             }
             return true;
@@ -751,7 +558,6 @@
             renderCars();
             renderLocations();
             updateStep();
-            
             document.getElementById('prevBtn').onclick = prevStep;
             document.getElementById('nextBtn').onclick = nextStep;
         }
