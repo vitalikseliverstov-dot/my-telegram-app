@@ -34,7 +34,6 @@
             text-align: center;
         }
 
-        /* Карточки выбора с фото */
         .option-card {
             background: var(--tg-theme-secondary-bg-color, #f0f0f0);
             border-radius: 16px;
@@ -77,7 +76,6 @@
             opacity: 0.7;
         }
 
-        /* Кнопки навигации */
         .nav-buttons {
             position: fixed;
             bottom: 0;
@@ -115,7 +113,6 @@
             color: var(--tg-theme-text-color, #000000);
         }
 
-        /* Индикатор шагов */
         .steps-indicator {
             display: flex;
             justify-content: center;
@@ -143,7 +140,6 @@
 </head>
 <body>
 
-    <!-- Индикатор шагов -->
     <div class="steps-indicator">
         <div class="step-dot active" data-step="1"></div>
         <div class="step-dot" data-step="2"></div>
@@ -151,67 +147,61 @@
         <div class="step-dot" data-step="4"></div>
     </div>
 
-    <!-- ШАГ 1: Выбор машины -->
     <div id="step1" class="step active">
         <div class="step-title">🚗 Выберите машину</div>
         <div id="cars-list"></div>
     </div>
 
-    <!-- ШАГ 2: Выбор локаций -->
     <div id="step2" class="step">
         <div class="step-title">📍 Выберите локации</div>
         <div id="locations-list"></div>
     </div>
 
-    <!-- ШАГ 3: Выбор ночёвок -->
     <div id="step3" class="step">
         <div class="step-title">🏨 Выберите места для ночёвок</div>
         <div id="accommodations-list"></div>
     </div>
 
-    <!-- ШАГ 4: Итог -->
     <div id="step4" class="step">
         <div class="step-title">✅ Ваш тур</div>
         <div id="summary"></div>
     </div>
 
-    <!-- Кнопки навигации -->
     <div class="nav-buttons">
         <button id="prevBtn" class="btn-secondary" style="display: none;">◀ Назад</button>
         <button id="nextBtn" class="btn-primary">Далее ▶</button>
     </div>
 
     <script>
-        // ДАННЫЕ ДЛЯ КОНСТРУКТОРА С ФОТОГРАФИЯМИ
+        // МАШИНЫ (фото из папки images)
         const cars = [
             { 
                 id: 1, 
                 name: "Toyota Land Cruiser", 
                 desc: "Комфортный внедорожник, 5 мест", 
                 price: "15 000₽/день",
-                // ВАЖНО: замени ссылки на свои, когда загрузишь фото
-                image: "https://avatars.mds.yandex.net/get-autoru-vos/2200864/32e2da65c56f2768ad05cc7a8d4947a8/1200x900"
+                image: "images/toyota.jpg"
             },
             { 
                 id: 2, 
                 name: "Mitsubishi Delica", 
                 desc: "Микроавтобус, 7 мест, для компании", 
                 price: "12 000₽/день",
-                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Mitsubishi_Delica_%28front%29.JPG/800px-Mitsubishi_Delica_%28front%29.JPG"
+                image: "images/delica.jpg"
             },
             { 
                 id: 3, 
                 name: "Kia Sorento", 
                 desc: "Экономичный кроссовер, 5 мест", 
                 price: "8 000₽/день",
-                image: "https://avatars.mds.yandex.net/get-autoru-vos/2154864/6a1e2b24f5f6e03e2b9d07f1f8b6c8e5/1200x900"
+                image: "images/kia.jpg"
             },
             { 
                 id: 4, 
                 name: "УАЗ Буханка", 
                 desc: "Для бездорожья, настоящий вездеход", 
                 price: "7 000₽/день",
-                image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/UAZ-452_%28front%29.JPG/800px-UAZ-452_%28front%29.JPG"
+                image: "images/uaz.jpg"
             }
         ];
 
@@ -229,7 +219,6 @@
             { id: 4, name: "Кемпинг \"У костра\"", desc: "Палатки, общая кухня", price: "1 500₽/ночь" }
         ];
 
-        // Состояние приложения
         let selections = {
             car: null,
             locations: [],
@@ -239,7 +228,6 @@
         let currentStep = 1;
         const totalSteps = 4;
 
-        // Функция отрисовки списка машин с фотографиями
         function renderCars() {
             const container = document.getElementById('cars-list');
             if (!container) return;
@@ -265,7 +253,6 @@
             });
         }
 
-        // Функция отрисовки списка локаций
         function renderLocations() {
             const container = document.getElementById('locations-list');
             if (!container) return;
@@ -294,7 +281,6 @@
             });
         }
 
-        // Функция отрисовки списка ночёвок
         function renderAccommodations() {
             const container = document.getElementById('accommodations-list');
             if (!container) return;
@@ -323,7 +309,6 @@
             });
         }
 
-        // Функция отрисовки итога
         function renderSummary() {
             const container = document.getElementById('summary');
             if (!container) return;
@@ -338,7 +323,7 @@
             if (selectedCar) {
                 html += `
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <img src="${selectedCar.image}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">
+                        <img src="${selectedCar.image}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/60x60?text=Нет+фото'">
                         <div>${selectedCar.name} — ${selectedCar.price}</div>
                     </div>
                 `;
