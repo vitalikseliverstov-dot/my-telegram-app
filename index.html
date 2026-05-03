@@ -450,39 +450,51 @@
             container.innerHTML = html;
         }
         
-        // ОТПРАВКА С ЗАКРЫТИЕМ (только для Telegram)
+        // ОТПРАВКА ДАННЫХ БОТУ ЧЕРЕЗ TELEGRAM WEBAPP
         function submitTour() {
             const tg = window.Telegram?.WebApp;
             
-            // Проверки
             if (!selections.car) {
-                alert("❌ Сначала выберите машину!");
+                tg?.showAlert("❌ Сначала выберите машину!");
                 return;
             }
             
             if (selections.locations.length === 0) {
-                alert("❌ Выберите хотя бы одну локацию!");
+                tg?.showAlert("❌ Выберите хотя бы одну локацию!");
                 return;
             }
             
-            const totalPrice = calculateTotalPrice();
+            // Собираем данные пользователя из Telegram
+            const user = tg?.initDataUnsafe?.user || {};
             
-            // Сохраняем в консоль
             const tourData = {
+                user: {
+                    id: user.id,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    username: user.username
+                },
                 car: cars.find(c => c.id === selections.car),
                 locations: locations.filter(l => selections.locations.includes(l.id)),
                 accommodations: accommodations.filter(a => selections.accommodations.includes(a.id)),
-                totalPrice: totalPrice
+                totalPrice: calculateTotalPrice(),
+                timestamp: new Date().toISOString()
             };
-            console.log("Тур собран:", tourData);
             
-            // Показываем сообщение
-            alert(`✅ Заявка отправлена!\n\nВаш тур на сумму ${totalPrice.toLocaleString()} ₽ отправлен менеджеру.\n\nОжидайте связи в ближайшее время!`);
+            console.log("Отправляем данные боту:", tourData);
             
-            // Закрываем приложение (только если открыто в Telegram)
-            if (tg) {
-                tg.close();
-            }
+            // Отправляем данные боту
+            tg.sendData(JSON.stringify(tourData));
+            
+            // Показываем сообщение об успехе
+            tg.showPopup({
+                title: "✅ Заявка отправлена!",
+                message: "Менеджер свяжется с вами в ближайшее время.",
+                buttons: [{ type: "ok" }]
+            });
+            
+            // Закрываем приложение через 1.5 секунды
+            setTimeout(() => tg.close(), 1500);
         }
 
         function updateStep() {
