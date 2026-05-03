@@ -64,11 +64,6 @@
             color: white;
         }
 
-        .product-card.selected .product-price,
-        .product-card.selected .product-desc {
-            color: rgba(255,255,255,0.85);
-        }
-
         .product-image {
             width: 100%;
             aspect-ratio: 1 / 1;
@@ -450,7 +445,6 @@
             container.innerHTML = html;
         }
         
-        // ОТПРАВКА ДАННЫХ БОТУ ЧЕРЕЗ TELEGRAM WEBAPP
         function submitTour() {
             const tg = window.Telegram?.WebApp;
             
@@ -464,7 +458,6 @@
                 return;
             }
             
-            // Собираем данные пользователя из Telegram
             const user = tg?.initDataUnsafe?.user || {};
             
             const tourData = {
@@ -481,19 +474,15 @@
                 timestamp: new Date().toISOString()
             };
             
-            console.log("Отправляем данные боту:", tourData);
-            
-            // Отправляем данные боту
+            console.log("Отправляем:", tourData);
             tg.sendData(JSON.stringify(tourData));
             
-            // Показываем сообщение об успехе
             tg.showPopup({
                 title: "✅ Заявка отправлена!",
-                message: "Менеджер свяжется с вами в ближайшее время.",
+                message: "Менеджер свяжется с вами.",
                 buttons: [{ type: "ok" }]
             });
             
-            // Закрываем приложение через 1.5 секунды
             setTimeout(() => tg.close(), 1500);
         }
 
@@ -523,11 +512,11 @@
         
         function canGoNext() {
             if (currentStep === 1 && !selections.car) {
-                alert("Выберите машину!");
+                window.Telegram?.WebApp.showAlert("Выберите машину!");
                 return false;
             }
             if (currentStep === 2 && selections.locations.length === 0) {
-                alert("Выберите хотя бы одну локацию!");
+                window.Telegram?.WebApp.showAlert("Выберите хотя бы одну локацию!");
                 return false;
             }
             return true;
