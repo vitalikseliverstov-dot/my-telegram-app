@@ -22,46 +22,66 @@
         .status {
             margin-top: 20px;
             padding: 10px;
-            background: #f0f0f0;
             border-radius: 10px;
         }
+        .error { background: #ffdddd; color: red; }
+        .success { background: #ddffdd; color: green; }
+        .info { background: #ddddff; color: blue; }
     </style>
 </head>
 <body>
     <h1>🧪 Тест отправки</h1>
-    <button id="sendBtn">📤 Отправить данные боту</button>
-    <div class="status" id="status">Ожидание нажатия...</div>
+    <button id="sendBtn" disabled>📤 Отправить данные боту</button>
+    <div class="status info" id="status">Загрузка...</div>
 
     <script>
-        const tg = window.Telegram?.WebApp;
-        
-        if (tg) {
-            tg.ready();
-            tg.expand();
-            document.getElementById('status').innerHTML = '✅ Telegram WebApp подключен';
-        } else {
-            document.getElementById('status').innerHTML = '❌ Не в Telegram';
-        }
-        
-        document.getElementById('sendBtn').onclick = () => {
-            const testData = {
-                type: 'test',
-                message: 'Привет от Mini App!',
-                timestamp: new Date().toISOString()
-            };
+        // Ждём полной загрузки страницы
+        window.onload = function() {
+            const statusDiv = document.getElementById('status');
+            const sendBtn = document.getElementById('sendBtn');
             
-            if (tg) {
-                tg.sendData(JSON.stringify(testData));
-                document.getElementById('status').innerHTML = '✅ Данные отправлены боту!';
-                tg.showPopup({
-                    title: "Отправлено",
-                    message: "Данные отправлены. Проверь консоль бота.",
-                    buttons: [{type: "ok"}]
-                });
-                setTimeout(() => tg.close(), 1500);
+            // Проверяем, что мы внутри Telegram
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                
+                // Сообщаем Telegram, что приложение готово
+                tg.ready();
+                
+                // Растягиваем на весь экран
+                tg.expand();
+                
+                statusDiv.innerHTML = '✅ Telegram WebApp подключен! Можете отправлять.';
+                statusDiv.className = 'status success';
+                sendBtn.disabled = false;
+                
+                sendBtn.onclick = function() {
+                    const testData = {
+                        type: 'test',
+                        message: 'Привет от Mini App!',
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    tg.sendData(JSON.stringify(testData));
+                    statusDiv.innerHTML = '✅ Данные отправлены боту!';
+                    statusDiv.className = 'status success';
+                    
+                    tg.showPopup({
+                        title: "Отправлено",
+                        message: "Данные отправлены. Проверь консоль бота.",
+                        buttons: [{type: "ok"}]
+                    });
+                    
+                    setTimeout(() => tg.close(), 1500);
+                };
             } else {
-                document.getElementById('status').innerHTML = '❌ Ошибка: Telegram не найден';
-                alert('Открывай через Telegram!');
+                // Не в Telegram
+                statusDiv.innerHTML = '❌ Ошибка: Telegram не найден. Открой это приложение через Telegram бота!';
+                statusDiv.className = 'status error';
+                
+                // Проверим, открыто ли через прямой доступ
+                if (window.location.protocol === 'https:' || window.location.protocol === 'http:') {
+                    statusDiv.innerHTML += '<br><br>⚠️ Ты открыл страницу в обычном браузере. Используй кнопку "Open" в Telegram боте.';
+                }
             }
         };
     </script>
